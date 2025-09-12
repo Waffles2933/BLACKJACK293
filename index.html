@@ -434,13 +434,6 @@ preset100.addEventListener('click',()=>betInput.value=100);
 
 // ===== Keyboard Shortcuts =====
 document.addEventListener('keydown',(e)=>{
-  if(gameOver && e.key.toLowerCase()===keyMap.redeal){dealBtn.click(); return;}
-  if(e.key.toLowerCase()===keyMap.hit && !hitBtn.disabled) hitBtn.click();
-  if(e.key.toLowerCase()===keyMap.stand && !standBtn.disabled) standBtn.click();
-  if(e.key.toLowerCase()===keyMap.double && !doubleBtn.disabled) doubleBtn.click();
-  if(e.key.toLowerCase()===keyMap.split && !splitBtn.disabled) splitBtn.click();
-});
-document.addEventListener('keydown',(e)=>{
   const key = e.key.toLowerCase();
 
   // Always allow redeal
