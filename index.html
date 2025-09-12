@@ -454,65 +454,6 @@ saveKeysBtn.addEventListener('click',()=>{
 
 // ===== Theme Toggle =====
 themeToggleBtn.addEventListener('click',()=>{ document.body.classList.toggle('light'); });
-
-// === PART 3: UX & Enhancements ===
-
-// Card deal animation
-function animateCard(cardEl){
-  cardEl.classList.add('animate');
-  setTimeout(()=>cardEl.classList.remove('animate'),200);
-}
-
-// Override renderHands to animate new cards
-const originalRenderHands = renderHands;
-renderHands = function(){
-  originalRenderHands();
-  // Animate last card of current hand
-  const hand=playerHands[currentHandIndex];
-  if(hand && hand.cards.length>0){
-    const handDivs=playerPanelEl.getElementsByClassName('hand');
-    const cardsDiv=handDivs[currentHandIndex].getElementsByClassName('cards')[0];
-    const lastCardEl=cardsDiv.lastElementChild;
-    if(lastCardEl) animateCard(lastCardEl);
-  }
-};
-
-// Animate dealer cards
-const originalRenderDealer = renderDealer;
-renderDealer = function(hideSecond=true){
-  originalRenderDealer(hideSecond);
-  // Animate last dealer card
-  const cards = dealerCardsEl.getElementsByClassName('card');
-  if(cards.length>0){
-    animateCard(cards[cards.length-1]);
-  }
-};
-
-// Notifications with fade-in/out
-function showNotification(msg,color='#0f0'){
-  const n=document.getElementById('notification');
-  n.textContent=msg; n.style.color=color; n.style.opacity=1;
-  n.style.transition='opacity 0.5s';
-  setTimeout(()=>{ n.style.opacity=0; },1200);
-}
-
-// Play sounds safely
-function playSound(audioEl){
-  if(audioEl) audioEl.currentTime=0, audioEl.play().catch(()=>{});
-}
-
-// Override player action buttons to include sound
-['hit','stand','double','split'].forEach(action=>{
-  const btn=eval(action+'Btn');
-  const originalClick=btn.onclick;
-  btn.addEventListener('click',()=>{
-    if(action==='hit') playSound(sndHit);
-    else if(action==='double') playSound(sndHit);
-  });
-});
-
-// Theme toggle smooth transition
-document.body.style.transition='background 0.3s,color 0.3s';
     
 </script>
 </body>
