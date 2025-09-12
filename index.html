@@ -13,8 +13,41 @@ body.light .table{background:#fff;color:#000;box-shadow:0 10px 30px rgba(0,0,0,0
 .hand{background:#071026;padding:10px;border-radius:8px;margin-bottom:12px;position:relative;transition:border 0.2s;}
 body.light .hand{background:#e0e0e0;}
 .cards{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.card{width:50px;height:70px;border-radius:6px;background:#fff;color:#000;display:flex;flex-direction:column;justify-content:space-between;padding:4px;font-weight:700;text-align:center;transition:transform 0.2s;}
+.card{
+  width: 60px;
+  height: 85px;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  position: relative;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+.card.red { color: #e11d48; }
+.card .top-left,
+.card .bottom-right { font-size: 14px; position: absolute; }
+.card .top-left { top: 4px; left: 4px; }
+.card .bottom-right { bottom: 4px; right: 4px; transform: rotate(180deg); }
+.card .center { font-size: 24px; }
 .card.animate{transform:translateY(-10px);}
+.hidden-card{
+  background: linear-gradient(135deg,#334155,#0f1724);
+  color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+.hidden-card::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);
+}
 .controls{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap;}
 button{padding:6px 10px;border-radius:6px;border:none;background:#0ea5a6;color:#042027;font-weight:700;cursor:pointer;}
 button:disabled{opacity:0.5;cursor:default;}
@@ -33,12 +66,6 @@ input[type=number]{width:60px;padding:4px;border-radius:4px;border:none;font-wei
 .chip-stack{display:inline-block;width:30px;height:15px;margin:0 1px;background:red;border-radius:50%;vertical-align:middle;}
 #stats{margin-top:10px;font-size:14px;text-align:center;}
 #dealerHistory{margin-bottom:6px;font-size:14px;text-align:center;}
-.card.red { color: #e11d48; }
-.card .top-left,
-.card .bottom-right { font-size: 14px; position: absolute; }
-.card .top-left { top: 4px; left: 4px; }
-.card .bottom-right { bottom: 4px; right: 4px; transform: rotate(180deg); }
-.card .center { font-size: 24px; }
 </style>
 </head>
 <body>
@@ -128,7 +155,6 @@ function buildDeck(){const d=[];for(const s of SUITS)for(const r of RANKS)d.push
 function shuffle(deck){for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}}
 function dealCard(to){if(deck.length===0){deck=buildDeck();shuffle(deck);}const card=deck.pop();to.push(card);return card;}
 function calculateScore(hand){let sum=0,aces=0;for(const c of hand){sum+=c.value;if(c.rank==='A')aces++;}while(sum>21&&aces>0){sum-=10;aces--;}return sum;}
-function renderCard(card,hidden=false){const div=document.createElement('div');div.className='card'+(hidden?' hidden-card':'');div.innerHTML=`<div>${hidden?'&nbsp;':card.rank}</div><div>${hidden?'&nbsp;':card.suit}</div><div>${hidden?'&nbsp;':card.rank}</div>`;return div;}
 function showNotification(msg,color='#f00'){notificationEl.textContent=msg;notificationEl.style.color=color;notificationEl.style.opacity=1;setTimeout(()=>notificationEl.style.opacity=0,800);}
 function updateChips(){chipsEl.textContent=chips;}
 function saveChips(){localStorage.setItem('bjChips',chips);}
@@ -138,118 +164,10 @@ function updateDealerHistory(){dealerHistoryEl.textContent='Dealer Last Cards: '
 function animateCard(cardEl){cardEl.classList.add('animate');setTimeout(()=>cardEl.classList.remove('animate'),200);}
 function toggleTheme(){document.body.classList.toggle('light');}
 
-// --- Rendering ---
-function renderDealer(showAll=false){dealerCardsEl.innerHTML='';dealer.forEach((c,i)=>{const hidden=!showAll&&i===1;const cardEl=renderCard(c,hidden);dealerCardsEl.appendChild(cardEl);if(!hidden)animateCard(cardEl);});dealerScoreEl.textContent='Score: '+(showAll?calculateScore(dealer):'?');}
-function renderPlayer(){playerPanelEl.innerHTML='';playerHands.forEach((hand,i)=>{const div=document.createElement('div');div.className='hand';div.innerHTML=`<strong>Hand ${i+1}</strong> <span class="score">${calculateScore(hand.cards)}</span>`;const cardsDiv=document.createElement('div');cardsDiv.className='cards';hand.cards.forEach(c=>{const cardEl=renderCard(c,false);cardsDiv.appendChild(cardEl);animateCard(cardEl);});div.appendChild(cardsDiv);if(i===currentHandIndex&&!hand.finished)div.style.border='3px solid #0ea5a6';playerPanelEl.appendChild(div);});}
-
-// --- Preset bets ---
-preset10.addEventListener('click',()=>{betInput.value=10;});
-preset50.addEventListener('click',()=>{betInput.value=50;});
-preset100.addEventListener('click',()=>{betInput.value=100;});
-
-// --- Deal ---
-function deal(){
-    let bet=Math.min(Math.max(1,parseInt(betInput.value)||10),chips);
-    chips-=bet;
-    saveChips();
-    playerHands=[{cards:[],bet:bet,finished:false,doubled:false}];
-    currentHandIndex=0;
-    dealer=[];
-    deck=buildDeck();shuffle(deck);
-    dealCard(playerHands[0].cards);
-    dealCard(dealer);
-    dealCard(playerHands[0].cards);
-    dealCard(dealer);
-    gameOver=false;
-    renderDealer(false);
-    renderPlayer();
-    statusEl.textContent=`Playing hand 1`;
-    toggleButtons();
-    updateChips();
-}
-
-// --- Player Actions ---
-function playerHit(){const hand=playerHands[currentHandIndex];dealCard(hand.cards);if(calculateScore(hand.cards)>=21)hand.finished=true;renderPlayer();toggleButtons();if(hand.finished)nextHand();}
-function playerStand(){playerHands[currentHandIndex].finished=true;nextHand();}
-function playerDouble(){const hand=playerHands[currentHandIndex];if(hand.cards.length===2&&chips>=hand.bet){chips-=hand.bet;hand.bet*=2;hand.doubled=true;dealCard(hand.cards);hand.finished=true;renderPlayer();updateChips();nextHand();}}
-function playerSplit(){const hand=playerHands[currentHandIndex];if(hand.cards.length===2&&hand.cards[0].rank===hand.cards[1].rank&&playerHands.length<4&&chips>=hand.bet){chips-=hand.bet;const newHand={cards:[hand.cards.pop()],bet:hand.bet,finished:false,doubled:false};dealCard(hand.cards);dealCard(newHand.cards);playerHands.splice(currentHandIndex+1,0,newHand);renderPlayer();updateChips();toggleButtons();}}
-function playerSurrender(){const hand=playerHands[currentHandIndex];chips+=Math.floor(hand.bet/2);hand.finished=true;renderPlayer();updateChips();nextHand();}
-function playerInsurance(){showNotification('Insurance not implemented yet','#ff0');}
-
-// --- Hand Management ---
-function nextHand(){currentHandIndex++;if(currentHandIndex>=playerHands.length){dealerTurn();}else{statusEl.textContent=`Playing hand ${currentHandIndex+1}`;toggleButtons();renderPlayer();}}
-function toggleButtons(){if(gameOver){dealBtn.disabled=false;hitBtn.disabled=true;standBtn.disabled=true;doubleBtn.disabled=true;splitBtn.disabled=true;insuranceBtn.disabled=true;surrenderBtn.disabled=true;}else{dealBtn.disabled=true;const hand=playerHands[currentHandIndex];hitBtn.disabled=hand.finished;standBtn.disabled=hand.finished;doubleBtn.disabled=hand.finished||hand.cards.length!==2||chips<hand.bet;splitBtn.disabled=hand.finished||hand.cards.length!==2||hand.cards[0].rank!==hand.cards[1].rank||playerHands.length>=4||chips<hand.bet;insuranceBtn.disabled=dealer[0].rank!=='A'||hand.finished;surrenderBtn.disabled=hand.finished||hand.cards.length!==2;}}
-function dealerTurn(){renderDealer(true);let score=calculateScore(dealer);while(score<17||(score===17&&dealer.some(c=>c.rank==='A'&&calculateScore(dealer)<=17))){dealCard(dealer);renderDealer(true);score=calculateScore(dealer);}settleBets();}
-function settleBets(){const dealerScore=calculateScore(dealer);dealerHistory.push(...dealer);if(dealerHistory.length>5)dealerHistory=dealerHistory.slice(-5);updateDealerHistory();let results=[];playerHands.forEach(hand=>{const s=calculateScore(hand.cards);if(s>21){results.push(`Hand busts. Lose ${hand.bet}`);stats.losses++;}else if(s===21&&hand.cards.length===2&&dealerScore!==21){chips+=hand.bet*2.5;results.push(`Blackjack! Win ${hand.bet*1.5}`);stats.blackjacks++;stats.wins++;}else if(dealerScore>21||s>dealerScore){chips+=hand.bet*2;results.push(`Win ${hand.bet}`);stats.wins++;}else if(s===dealerScore){chips+=hand.bet;results.push(`Push`);}else{results.push(`Lose ${hand.bet}`);stats.losses++;}});gameOver=true;updateChips();toggleButtons();renderDealer(true);statusEl.innerHTML=results.join('<br>');updateStats();saveChips();}
-
-// --- Restart ---
-restartBtn.addEventListener('click',()=>{chips=1000;saveChips();playerHands=[];dealer=[];gameOver=true;currentHandIndex=0;renderDealer(false);renderPlayer();statusEl.textContent="Set your bet and press Deal.";updateChips();toggleButtons();dealerHistory=[];updateDealerHistory();stats={wins:0,losses:0,blackjacks:0};updateStats();});
-
-// --- Key Shortcuts ---
-document.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(key===keyMap.hit)playerHit();else if(key===keyMap.stand)playerStand();else if(key===keyMap.double)playerDouble();else if(key===keyMap.split)playerSplit();else if(key===keyMap.redeal)deal();});
-
-// --- Custom keys modal ---
-keySettingsBtn.addEventListener('click',()=>{keyModal.style.display='flex';});
-saveKeysBtn.addEventListener('click',()=>{keyMap.hit=document.getElementById('keyHit').value.toLowerCase();keyMap.stand=document.getElementById('keyStand').value.toLowerCase();keyMap.double=document.getElementById('keyDouble').value.toLowerCase();keyMap.split=document.getElementById('keySplit').value.toLowerCase();keyMap.redeal=document.getElementById('keyRedeal').value.toLowerCase();keyModal.style.display='none';});
-keyModal.addEventListener('click',e=>{if(e.target===keyModal)keyModal.style.display='none';});
-
-// --- Theme toggle ---
-themeToggleBtn.addEventListener('click',toggleTheme);
-
-// --- Load chips from storage ---
-loadChips();
-updateStats();
-// --- Upgrade cards to red for hearts/diamonds and add details ---
-const style = document.createElement('style');
-style.textContent = `
-.card {
-  width: 60px;
-  height: 85px;
-  border-radius: 8px;
-  background: #fff;
-  color: #000;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 4px;
-  font-weight: 700;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  position: relative;
-  font-family: 'Arial Black', Arial, sans-serif;
-}
-.card.red { color: #e11d48; }
-.card .top-left,
-.card .bottom-right { font-size: 14px; position: absolute; }
-.card .top-left { top: 4px; left: 4px; }
-.card .bottom-right { bottom: 4px; right: 4px; transform: rotate(180deg); }
-.card .center { font-size: 24px; }
-.hidden-card {
-  background: linear-gradient(135deg,#334155,#0f1724);
-  color: transparent;
-  position: relative;
-  overflow: hidden;
-}
-.hidden-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);
-}`;
-document.head.appendChild(style);
-
+// --- Render Card with red hearts/diamonds ---
 function renderCard(card, hidden=false){
   const div = document.createElement('div');
   div.className = 'card' + (hidden ? ' hidden-card' : '');
   if(!hidden && (card.suit === '♥' || card.suit === '♦')) div.classList.add('red');
-
   div.innerHTML = `
-    <div class="top-left">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>
-    <div class="center">${hidden?'&nbsp;':card.suit}</div>
-    <div class="bottom-right">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>
-  `;
-  return div;
-}
-</script>
-</body>
-</html>
+    <div class="top-left">${hidden?'&nbsp;
