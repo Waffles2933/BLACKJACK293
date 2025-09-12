@@ -185,6 +185,8 @@ Chips: <span id="chips">1000</span> | Bet: <input type="number" id="betInput" mi
 <script>
 // === PART 2: FULL GAMEPLAY JS ===
 
+// === PART 2: FIXED GAMEPLAY JS ===
+
 // Utility variables
 const SUITS = ['♠','♥','♦','♣'];
 const RANKS = [
@@ -224,10 +226,10 @@ function buildDeck(){
   const d=[];
   for(const s of SUITS){
     for(const r of RANKS){
-      d.push({suit:s,rank:r.r,value:r.v});
+      d.push({suit:s, rank:r.r, value:r.v});
     }
   }
-  return d;
+  return shuffle(d);
 }
 
 function shuffle(array){
@@ -239,6 +241,7 @@ function shuffle(array){
 }
 
 function dealCard(hand){
+  if(deck.length===0) deck = buildDeck();
   const card = deck.pop();
   if(hand) hand.cards.push(card);
   return card;
@@ -272,9 +275,11 @@ function renderHands(){
   playerHands.forEach((hand,index)=>{
     const div=document.createElement('div');
     div.className='hand';
-    div.innerHTML=`<strong>Hand ${index+1}</strong> <span class="score">${calcScore(hand.cards)}</span>`;
-    const cardsDiv=document.createElement('div'); cardsDiv.className='cards';
-    hand.cards.forEach(c=>cardsDiv.appendChild(renderCard(c)));
+    const score = calcScore(hand.cards);
+    div.innerHTML=`<strong>Hand ${index+1}</strong> <span class="score">${score}</span>`;
+    const cardsDiv=document.createElement('div'); 
+    cardsDiv.className='cards';
+    hand.cards.forEach(c => cardsDiv.appendChild(renderCard(c)));
     div.appendChild(cardsDiv);
     playerPanelEl.appendChild(div);
   });
@@ -285,7 +290,7 @@ function renderDealer(hideSecond=true){
   dealer.forEach((c,i)=>{
     dealerCardsEl.appendChild(renderCard(c,i===1 && hideSecond));
   });
-  if(!hideSecond) dealerScoreEl.textContent=calcScore(dealer);
+  dealerScoreEl.textContent = hideSecond ? '—' : calcScore(dealer);
 }
 
 function updateChips(){ chipsEl.textContent=chips; }
@@ -294,11 +299,9 @@ function showNotification(msg,color='#0f0'){
   n.textContent=msg; n.style.color=color; n.style.opacity=1;
   setTimeout(()=>n.style.opacity=0,1200);
 }
-
 function updateStats(){
   document.getElementById('stats').textContent=`Wins: ${stats.wins} | Losses: ${stats.losses} | Blackjacks: ${stats.blackjacks}`;
 }
-
 function updateDealerHistory(){
   if(dealerHistory.length>0){
     document.getElementById('dealerHistory').textContent='Dealer Last Cards: '+dealerHistory.map(c=>c.rank+c.suit).join(', ');
@@ -307,7 +310,7 @@ function updateDealerHistory(){
 
 // ===== Game Control =====
 function resetGame(){
-  deck=shuffle(buildDeck());
+  deck = shuffle(buildDeck());
   dealer=[]; playerHands=[]; currentHandIndex=0; gameOver=false;
   dealerCardsEl.innerHTML=''; dealerScoreEl.textContent='—';
   playerPanelEl.innerHTML=''; statusEl.textContent='Game started! Make your move.';
@@ -319,12 +322,20 @@ dealBtn.addEventListener('click',()=>{
   let bet=parseInt(betInput.value);
   if(isNaN(bet)||bet<1){ showNotification('Invalid bet','#f00'); return; }
   if(bet>chips){ showNotification('Not enough chips','#f00'); return; }
+  
   chips-=bet; updateChips();
+  
   resetGame();
-  playerHands.push({cards:[],bet:bet,double:false,stand:false});
-  dealCard(playerHands[0]); dealCard(playerHands[0]);
-  dealer.push(dealCard([])); dealer.push(dealCard([]));
-  renderHands(); renderDealer();
+  const hand={cards:[], bet:bet, double:false, stand:false};
+  playerHands.push(hand);
+  
+  dealCard(hand);
+  dealCard(hand);
+  dealer.push(dealCard());
+  dealer.push(dealCard());
+  
+  renderHands();
+  renderDealer();
   enablePlayerButtons();
 });
 
@@ -332,8 +343,8 @@ dealBtn.addEventListener('click',()=>{
 function enablePlayerButtons(){
   const hand=playerHands[currentHandIndex];
   hitBtn.disabled=false; standBtn.disabled=false;
-  doubleBtn.disabled=hand.cards.length===2?false:true;
-  splitBtn.disabled=(hand.cards.length===2 && hand.cards[0].rank===hand.cards[1].rank && playerHands.length<4)?false:true;
+  doubleBtn.disabled=(hand.cards.length===2 && chips>=hand.bet)?false:true;
+  splitBtn.disabled=(hand.cards.length===2 && hand.cards[0].rank===hand.cards[1].rank && playerHands.length<4 && chips>=hand.bet)?false:true;
 }
 
 // ===== Player Actions =====
@@ -360,9 +371,8 @@ doubleBtn.addEventListener('click',()=>{
 
 splitBtn.addEventListener('click',()=>{
   const hand=playerHands[currentHandIndex];
-  if(!(hand.cards.length===2 && hand.cards[0].rank===hand.cards[1].rank && playerHands.length<4)){ showNotification('Cannot split','#f00'); return; }
   const card=hand.cards.pop();
-  const newHand={cards:[card],bet:hand.bet,double:false,stand:false};
+  const newHand={cards:[card], bet:hand.bet, double:false, stand:false};
   dealCard(hand); dealCard(newHand);
   playerHands.splice(currentHandIndex+1,0,newHand);
   renderHands(); enablePlayerButtons();
@@ -390,7 +400,7 @@ function nextHandOrDealer(){
 function dealerTurn(){
   renderDealer(false);
   while(calcScore(dealer)<17 || (calcScore(dealer)===17 && dealer.some(c=>c.rank==='A'))){
-    dealer.push(dealCard([]));
+    dealer.push(dealCard());
     renderDealer(false);
   }
   evaluateHands();
@@ -403,9 +413,10 @@ function evaluateHands(){
     const playerScore=calcScore(hand.cards);
     if(playerScore>21){ showNotification('You lose','#f00'); sndLose.play(); stats.losses++; }
     else if(dealerScore>21 || playerScore>dealerScore){
-      const payout=hand.cards.length===2 && playerScore===21?hand.bet*2.5:hand.bet*2;
+      const payout=(hand.cards.length===2 && playerScore===21)?hand.bet*2.5:hand.bet*2;
       chips+=payout; updateChips(); showNotification('You win!','#0f0'); sndWin.play(); stats.wins++;
-    } else if(playerScore===dealerScore){ chips+=hand.bet; updateChips(); showNotification('Push','#ff0'); }
+    }
+    else if(playerScore===dealerScore){ chips+=hand.bet; updateChips(); showNotification('Push','#ff0'); }
     else{ showNotification('You lose','#f00'); sndLose.play(); stats.losses++; }
   });
   dealerHistory=dealer.slice(); updateDealerHistory(); updateStats();
@@ -442,9 +453,8 @@ saveKeysBtn.addEventListener('click',()=>{
 });
 
 // ===== Theme Toggle =====
-themeToggleBtn.addEventListener('click',()=>{
-  document.body.classList.toggle('light');
-});
+themeToggleBtn.addEventListener('click',()=>{ document.body.classList.toggle('light'); });
+
 // === PART 3: UX & Enhancements ===
 
 // Card deal animation
