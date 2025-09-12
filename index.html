@@ -5,7 +5,7 @@
 <title>Blackjack Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#0b1220; color:#e6eef8; display:flex; flex-direction:column; align-items:center; padding:20px; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#0b1220; color:#e6eef8; display:flex; flex-direction:column; align-items:center; padding:20px; position:relative;}
 .table { width: 90%; max-width: 900px; background:#0f1724; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.6); margin-bottom:20px; }
 h1 { text-align:center; margin-bottom:10px; }
 .hand { background:#071026; padding:10px; border-radius:8px; margin-bottom:12px; }
@@ -15,16 +15,23 @@ h1 { text-align:center; margin-bottom:10px; }
 button { padding:6px 10px; border-radius:6px; border:none; background:#0ea5a6; color:#042027; font-weight:700; cursor:pointer; }
 button:disabled { opacity:0.5; cursor:default; }
 .status { text-align:center; font-weight:700; margin:8px 0; }
-.score { font-weight:800; color:#9ad1d1; }
+.score { font-weight:900; color:#9ad1d1; font-size:18px; }
 .bet-chips { text-align:center; margin-bottom:8px; }
+input[type=number]{width:60px; padding:4px; border-radius:4px; border:none; font-weight:700;}
+#keySettingsBtn { position:absolute; top:10px; right:10px; background:#facc15; color:#042027; font-weight:700; }
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; }
+.modal-content { background:#0f1724; padding:20px; border-radius:10px; display:flex; flex-direction:column; gap:8px; }
+.modal-content input { width:60px; padding:4px; border-radius:4px; border:none; }
 </style>
 </head>
 <body>
 
 <h1>Blackjack Pro</h1>
 
+<button id="keySettingsBtn">Custom Keys</button>
+
 <div class="bet-chips">
-  Chips: <span id="chips">100</span> | Bet: <span id="currentBet">0</span>
+  Chips: <span id="chips">1000</span> | Bet: <input type="number" id="betInput" min="1" max="1000" value="10">
 </div>
 
 <div class="table" id="dealerPanel">
@@ -45,10 +52,21 @@ button:disabled { opacity:0.5; cursor:default; }
   <button id="restartBtn">Restart</button>
 </div>
 
-<div class="status" id="status">Place your bet and press Deal.</div>
+<div class="status" id="status">Set your bet and press Deal.</div>
+
+<!-- Modal for key settings -->
+<div id="keyModal" class="modal">
+  <div class="modal-content">
+    <label>Hit: <input id="keyHit" maxlength="1" value="h"></label>
+    <label>Stand: <input id="keyStand" maxlength="1" value="s"></label>
+    <label>Double: <input id="keyDouble" maxlength="1" value="d"></label>
+    <label>Split: <input id="keySplit" maxlength="1" value="p"></label>
+    <label>Redeal: <input id="keyRedeal" maxlength="1" value="r"></label>
+    <button id="saveKeysBtn">Save Keys</button>
+  </div>
+</div>
 
 <script>
-// --- Blackjack Pro JS ---
 const SUITS = ['♠','♥','♦','♣'];
 const RANKS = [
   {r:'A', value:11},{r:'2', value:2},{r:'3', value:3},{r:'4', value:4},{r:'5', value:5},
@@ -56,19 +74,15 @@ const RANKS = [
   {r:'J', value:10},{r:'Q', value:10},{r:'K', value:10},
 ];
 
-let deck = [];
-let dealer = [];
-let playerHands = []; // each hand: {cards:[...], bet:number, finished:boolean, doubled:boolean}
-let currentHandIndex = 0;
-let gameOver = true;
-let chips = 100;
+let deck=[], dealer=[], playerHands=[], currentHandIndex=0, gameOver=true, chips=1000;
+let keyMap={hit:'h',stand:'s',double:'d',split:'p',redeal:'r'};
 
 const dealerCardsEl = document.getElementById('dealerCards');
 const dealerScoreEl = document.getElementById('dealerScore');
 const playerPanelEl = document.getElementById('playerPanel');
 const statusEl = document.getElementById('status');
 const chipsEl = document.getElementById('chips');
-const currentBetEl = document.getElementById('currentBet');
+const betInput = document.getElementById('betInput');
 
 const dealBtn = document.getElementById('dealBtn');
 const hitBtn = document.getElementById('hitBtn');
@@ -76,210 +90,60 @@ const standBtn = document.getElementById('standBtn');
 const doubleBtn = document.getElementById('doubleBtn');
 const splitBtn = document.getElementById('splitBtn');
 const restartBtn = document.getElementById('restartBtn');
+const keySettingsBtn = document.getElementById('keySettingsBtn');
+const keyModal = document.getElementById('keyModal');
+const saveKeysBtn = document.getElementById('saveKeysBtn');
 
-function buildDeck(){
-  const d=[];
-  for(const s of SUITS){
-    for(const r of RANKS){
-      d.push({suit:s, rank:r.r, value:r.value});
-    }
-  }
-  return d;
-}
+function buildDeck(){ const d=[]; for(const s of SUITS) for(const r of RANKS) d.push({suit:s, rank:r.r, value:r.value}); return d; }
+function shuffle(deck){ for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } }
+function dealCard(to){ if(deck.length===0){deck=buildDeck();shuffle(deck);} const card=deck.pop(); to.push(card); return card; }
+function calculateScore(hand){ let sum=0, aces=0; for(const c of hand){sum+=c.value;if(c.rank==='A') aces++;} while(sum>21 && aces>0){sum-=10; aces--;} return sum; }
+function renderCard(card, hidden=false){ const div=document.createElement('div'); div.className='card'+(hidden?' hidden-card':''); div.innerHTML=`<div>${hidden?'&nbsp;':card.rank}</div><div>${hidden?'&nbsp;':card.suit}</div><div>${hidden?'&nbsp;':card.rank}</div>`; return div; }
+function renderDealer(showAll=false){ dealerCardsEl.innerHTML=''; dealer.forEach((c,i)=>{ const hidden=!showAll && i===1; dealerCardsEl.appendChild(renderCard(c,hidden)); }); dealerScoreEl.textContent='Score: '+(showAll?calculateScore(dealer):'?'); }
+function renderPlayer(){ playerPanelEl.innerHTML=''; playerHands.forEach((hand,i)=>{ const div=document.createElement('div'); div.className='hand'; div.innerHTML=`<strong>Hand ${i+1}</strong> <span class="score">${calculateScore(hand.cards)}</span>`; const cardsDiv=document.createElement('div'); cardsDiv.className='cards'; hand.cards.forEach(c=>cardsDiv.appendChild(renderCard(c,false))); div.appendChild(cardsDiv); if(i===currentHandIndex && !hand.finished) div.style.border='2px solid #0ea5a6'; playerPanelEl.appendChild(div); }); }
+function toggleButtons(){ if(gameOver){ dealBtn.disabled=false; hitBtn.disabled=true; standBtn.disabled=true; doubleBtn.disabled=true; splitBtn.disabled=true; } else { dealBtn.disabled=true; const hand=playerHands[currentHandIndex]; hitBtn.disabled=hand.finished; standBtn.disabled=hand.finished; doubleBtn.disabled=hand.finished || hand.cards.length!==2 || chips<hand.bet; splitBtn.disabled=hand.finished || hand.cards.length!==2 || hand.cards[0].rank!==hand.cards[1].rank || playerHands.length>=4 || chips<hand.bet; } }
+function nextHand(){ currentHandIndex++; if(currentHandIndex>=playerHands.length){ dealerTurn(); } else { statusEl.textContent=`Playing hand ${currentHandIndex+1}`; toggleButtons(); renderPlayer(); } }
+function playerHit(){ const hand=playerHands[currentHandIndex]; dealCard(hand.cards); if(calculateScore(hand.cards)>21) hand.finished=true; renderPlayer(); toggleButtons(); if(hand.finished) nextHand(); }
+function playerStand(){ playerHands[currentHandIndex].finished=true; nextHand(); }
+function playerDouble(){ const hand=playerHands[currentHandIndex]; if(chips>=hand.bet){ chips-=hand.bet; hand.bet*=2; hand.doubled=true; dealCard(hand.cards); hand.finished=true; renderPlayer(); updateChips(); nextHand(); } }
+function playerSplit(){ const hand=playerHands[currentHandIndex]; if(playerHands.length>=4 || chips<hand.bet) return; chips-=hand.bet; const newHand={cards:[hand.cards.pop()],bet:hand.bet,finished:false,doubled:false}; dealCard(hand.cards); dealCard(newHand.cards); playerHands.splice(currentHandIndex+1,0,newHand); renderPlayer(); updateChips(); toggleButtons(); }
 
-function shuffle(deck){
-  for(let i=deck.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [deck[i],deck[j]]=[deck[j],deck[i]];
-  }
-}
+async function dealerTurn(){ renderDealer(true); let score=calculateScore(dealer); while(score<17 || (score===17 && dealer.some(c=>c.rank==='A' && calculateScore(dealer)<=17))){ await new Promise(r=>setTimeout(r,500)); dealCard(dealer); renderDealer(true); score=calculateScore(dealer); } settleBets(); }
+function settleBets(){ const dealerScore=calculateScore(dealer); let results=[]; playerHands.forEach(hand=>{ const s=calculateScore(hand.cards); if(s>21) results.push(`Hand busts. Lose ${hand.bet}`); else if(s===21 && hand.cards.length===2 && dealerScore!==21) { chips+=hand.bet*2.5; results.push(`Blackjack! Win ${hand.bet*1.5}`); } else if(dealerScore>21 || s>dealerScore){ chips+=hand.bet*2; results.push(`Win ${hand.bet}`); } else if(s===dealerScore){ chips+=hand.bet; results.push(`Push`); } else results.push(`Lose ${hand.bet}`); }); statusEl.innerHTML=results.join('<br>'); gameOver=true; updateChips(); toggleButtons(); renderDealer(true); }
+function updateChips(){ chipsEl.textContent=chips; }
 
-function dealCard(to){
-  if(deck.length===0){deck=buildDeck();shuffle(deck);}
-  const card=deck.pop();
-  to.push(card);
-  return card;
-}
+function deal(){ let bet=Math.min(Math.max(1,parseInt(betInput.value)||10),chips); chips-=bet; playerHands=[{cards:[],bet:bet,finished:false,doubled:false}]; currentHandIndex=0; dealer=[]; deck=buildDeck(); shuffle(deck); dealCard(playerHands[0].cards); dealCard(dealer); dealCard(playerHands[0].cards); dealCard(dealer); gameOver=false; renderDealer(false); renderPlayer(); statusEl.textContent=`Playing hand 1`; updateChips(); toggleButtons(); }
 
-function calculateScore(hand){
-  let sum=0, aces=0;
-  for(const c of hand){
-    sum+=c.value;
-    if(c.rank==='A') aces++;
-  }
-  while(sum>21 && aces>0){sum-=10; aces--;}
-  return sum;
-}
-
-function renderCard(card, hidden=false){
-  const div=document.createElement('div');
-  div.className='card'+(hidden?' hidden-card':'');
-  div.innerHTML=`<div>${hidden?'&nbsp;':card.rank}</div><div>${hidden?'&nbsp;':card.suit}</div><div>${hidden?'&nbsp;':card.rank}</div>`;
-  return div;
-}
-
-function renderDealer(showAll=false){
-  dealerCardsEl.innerHTML='';
-  dealer.forEach((c,idx)=>{
-    const hidden=!showAll && idx===1;
-    dealerCardsEl.appendChild(renderCard(c,hidden));
-  });
-  dealerScoreEl.textContent='Score: '+(showAll?calculateScore(dealer):'?');
-}
-
-function renderPlayer(){
-  playerPanelEl.innerHTML='';
-  playerHands.forEach((hand,i)=>{
-    const div=document.createElement('div');
-    div.className='hand';
-    div.innerHTML=`<strong>Hand ${i+1}</strong> <span class="score">Score: ${calculateScore(hand.cards)}</span>`;
-    const cardsDiv=document.createElement('div'); cardsDiv.className='cards';
-    hand.cards.forEach(c=>cardsDiv.appendChild(renderCard(c,false)));
-    div.appendChild(cardsDiv);
-    if(i===currentHandIndex && !hand.finished) div.style.border='2px solid #0ea5a6';
-    playerPanelEl.appendChild(div);
-  });
-}
-
-function toggleButtons(){
-  if(gameOver){
-    dealBtn.disabled=false;
-    hitBtn.disabled=true;
-    standBtn.disabled=true;
-    doubleBtn.disabled=true;
-    splitBtn.disabled=true;
-  }else{
-    dealBtn.disabled=true;
-    const hand=playerHands[currentHandIndex];
-    hitBtn.disabled=hand.finished;
-    standBtn.disabled=hand.finished;
-    doubleBtn.disabled=hand.finished || hand.cards.length!==2 || chips<hand.bet;
-    splitBtn.disabled=hand.finished || hand.cards.length!==2 || hand.cards[0].rank!==hand.cards[1].rank || playerHands.length>=4 || chips<hand.bet;
-  }
-}
-
-function nextHand(){
-  currentHandIndex++;
-  if(currentHandIndex>=playerHands.length){
-    dealerTurn();
-  }else{
-    statusEl.textContent=`Playing hand ${currentHandIndex+1}`;
-    toggleButtons();
-    renderPlayer();
-  }
-}
-
-function playerHit(){
-  const hand=playerHands[currentHandIndex];
-  dealCard(hand.cards);
-  if(calculateScore(hand.cards)>21) hand.finished=true;
-  renderPlayer();
-  toggleButtons();
-  if(hand.finished) nextHand();
-}
-
-function playerStand(){
-  playerHands[currentHandIndex].finished=true;
-  nextHand();
-}
-
-function playerDouble(){
-  const hand=playerHands[currentHandIndex];
-  if(chips>=hand.bet){
-    chips-=hand.bet;
-    hand.bet*=2;
-    hand.doubled=true;
-    dealCard(hand.cards);
-    hand.finished=true;
-    renderPlayer();
-    updateChips();
-    nextHand();
-  }
-}
-
-function playerSplit(){
-  const hand=playerHands[currentHandIndex];
-  if(playerHands.length>=4) return;
-  if(chips<hand.bet) return;
-  chips-=hand.bet;
-  const newHand={cards:[hand.cards.pop()],bet:hand.bet,finished:false,doubled:false};
-  dealCard(hand.cards);
-  dealCard(newHand.cards);
-  playerHands.splice(currentHandIndex+1,0,newHand);
-  renderPlayer();
-  updateChips();
-  toggleButtons();
-}
-
-async function dealerTurn(){
-  renderDealer(true);
-  let score=calculateScore(dealer);
-  while(score<17 || (score===17 && dealer.some(c=>c.rank==='A' && calculateScore(dealer)<=17))){
-    await new Promise(r=>setTimeout(r,500));
-    dealCard(dealer);
-    renderDealer(true);
-    score=calculateScore(dealer);
-  }
-  settleBets();
-}
-
-function settleBets(){
-  const dealerScore=calculateScore(dealer);
-  let results=[];
-  playerHands.forEach(hand=>{
-    const s=calculateScore(hand.cards);
-    if(s>21) results.push(`Hand busts. Lose ${hand.bet}`);
-    else if(s===21 && hand.cards.length===2 && dealerScore!==21) {
-      chips+=hand.bet*2.5;
-      results.push(`Blackjack! Win ${hand.bet*1.5}`);
-    }
-    else if(dealerScore>21 || s>dealerScore){
-      chips+=hand.bet*2;
-      results.push(`Win ${hand.bet}`);
-    } else if(s===dealerScore){
-      chips+=hand.bet;
-      results.push(`Push`);
-    } else results.push(`Lose ${hand.bet}`);
-  });
-  statusEl.innerHTML=results.join('<br>');
-  gameOver=true;
-  updateChips();
-  toggleButtons();
-  renderDealer(true);
-}
-
-function updateChips(){
-  chipsEl.textContent=chips;
-  currentBetEl.textContent=playerHands.length>0?playerHands[currentHandIndex]?.bet||0:0;
-}
-
-function deal(){
-  if(chips<=0){statusEl.textContent="No chips left! Restart."; return;}
-  let bet = Math.min(10,chips); // default bet 10
-  chips-=bet;
-  playerHands=[{cards:[],bet:bet,finished:false,doubled:false}];
-  currentHandIndex=0;
-  dealer=[];
-  deck=buildDeck(); shuffle(deck);
-  dealCard(playerHands[0].cards);
-  dealCard(dealer);
-  dealCard(playerHands[0].cards);
-  dealCard(dealer);
-  gameOver=false;
-  renderDealer(false);
-  renderPlayer();
-  statusEl.textContent=`Playing hand 1`;
-  updateChips();
-  toggleButtons();
-}
-
-// --- Event listeners ---
 dealBtn.addEventListener('click',deal);
 hitBtn.addEventListener('click',playerHit);
 standBtn.addEventListener('click',playerStand);
 doubleBtn.addEventListener('click',playerDouble);
 splitBtn.addEventListener('click',playerSplit);
-restartBtn.addEventListener('click',()=>{chips=100;playerHands=[];dealer=[];gameOver=true;currentHandIndex=0;renderDealer(false);renderPlayer();statusEl.textContent="Place your bet and press Deal.";updateChips();toggleButtons();});
+restartBtn.addEventListener('click',()=>{chips=1000;playerHands=[];dealer=[];gameOver=true;currentHandIndex=0;renderDealer(false);renderPlayer();statusEl.textContent="Set your bet and press Deal.";updateChips();toggleButtons();});
+
+// Quick keys
+document.addEventListener('keydown', e=>{
+  const key=e.key.toLowerCase();
+  if(key===keyMap.hit) playerHit();
+  else if(key===keyMap.stand) playerStand();
+  else if(key===keyMap.double) playerDouble();
+  else if(key===keyMap.split) playerSplit();
+  else if(key===keyMap.redeal) deal();
+});
+
+// Custom keys modal
+keySettingsBtn.addEventListener('click', ()=>{keyModal.style.display='flex';});
+saveKeysBtn.addEventListener('click', ()=>{
+  keyMap.hit=document.getElementById('keyHit').value.toLowerCase();
+  keyMap.stand=document.getElementById('keyStand').value.toLowerCase();
+  keyMap.double=document.getElementById('keyDouble').value.toLowerCase();
+  keyMap.split=document.getElementById('keySplit').value.toLowerCase();
+  keyMap.redeal=document.getElementById('keyRedeal').value.toLowerCase();
+  keyModal.style.display='none';
+});
+
+keyModal.addEventListener('click', e=>{if(e.target===keyModal) keyModal.style.display='none';});
+
 updateChips();
 </script>
 
