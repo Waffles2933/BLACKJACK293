@@ -249,4 +249,39 @@ function settleBets(){
 }
 
 function updateChips(){
-  chipsEl.textContent
+  chipsEl.textContent=chips;
+  currentBetEl.textContent=playerHands.length>0?playerHands[currentHandIndex]?.bet||0:0;
+}
+
+function deal(){
+  if(chips<=0){statusEl.textContent="No chips left! Restart."; return;}
+  let bet = Math.min(10,chips); // default bet 10
+  chips-=bet;
+  playerHands=[{cards:[],bet:bet,finished:false,doubled:false}];
+  currentHandIndex=0;
+  dealer=[];
+  deck=buildDeck(); shuffle(deck);
+  dealCard(playerHands[0].cards);
+  dealCard(dealer);
+  dealCard(playerHands[0].cards);
+  dealCard(dealer);
+  gameOver=false;
+  renderDealer(false);
+  renderPlayer();
+  statusEl.textContent=`Playing hand 1`;
+  updateChips();
+  toggleButtons();
+}
+
+// --- Event listeners ---
+dealBtn.addEventListener('click',deal);
+hitBtn.addEventListener('click',playerHit);
+standBtn.addEventListener('click',playerStand);
+doubleBtn.addEventListener('click',playerDouble);
+splitBtn.addEventListener('click',playerSplit);
+restartBtn.addEventListener('click',()=>{chips=100;playerHands=[];dealer=[];gameOver=true;currentHandIndex=0;renderDealer(false);renderPlayer();statusEl.textContent="Place your bet and press Deal.";updateChips();toggleButtons();});
+updateChips();
+</script>
+
+</body>
+</html>
