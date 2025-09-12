@@ -171,3 +171,18 @@ function renderCard(card, hidden=false){
   if(!hidden && (card.suit === '♥' || card.suit === '♦')) div.classList.add('red');
   div.innerHTML = `
     <div class="top-left">${hidden?'&nbsp;
+  </div>`; // closes innerHTML of renderCard
+  return div;
+}
+
+// --- Initialize ---
+deck=buildDeck();
+shuffle(deck);
+updateChips();
+loadChips();
+updateStats();
+dealerHistory=[];
+
+</script>
+</body>
+</html>
