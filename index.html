@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Blackjack</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:#0b1220;color:#e6eef8;display:flex;flex-direction:column;align-items:center;padding:20px;transition:background 0.3s,color 0.3s;}
 body.light{background:#f0f0f0;color:#000;}
@@ -13,41 +13,15 @@ body.light .table{background:#fff;color:#000;box-shadow:0 10px 30px rgba(0,0,0,0
 .hand{background:#071026;padding:10px;border-radius:8px;margin-bottom:12px;position:relative;transition:border 0.2s;}
 body.light .hand{background:#e0e0e0;}
 .cards{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.card{
-  width: 60px;
-  height: 85px;
-  border-radius: 8px;
-  background: #fff;
-  color: #000;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 4px;
-  font-weight: 700;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  position: relative;
-  font-family: 'Arial Black', Arial, sans-serif;
-  transition: transform 0.2s;
-}
+.card{width:60px;height:85px;border-radius:8px;background:#fff;color:#000;display:flex;flex-direction:column;justify-content:space-between;padding:4px;font-weight:700;text-align:center;box-shadow:0 4px 8px rgba(0,0,0,0.4);position:relative;font-family:'Arial Black',Arial,sans-serif;transition:transform 0.2s;}
 .card.red{color:#e11d48;}
 .card .top-left,.card .bottom-right{font-size:14px;position:absolute;}
 .card .top-left{top:4px;left:4px;}
 .card .bottom-right{bottom:4px;right:4px;transform:rotate(180deg);}
 .card .center{font-size:24px;}
 .card.animate{transform:translateY(-10px);}
-.hidden-card{
-  background: linear-gradient(135deg,#334155,#0f1724);
-  color: transparent;
-  position: relative;
-  overflow: hidden;
-}
-.hidden-card::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);
-}
+.hidden-card{background:linear-gradient(135deg,#334155,#0f1724);color:transparent;position:relative;overflow:hidden;}
+.hidden-card::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);}
 .controls{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap;}
 button{padding:6px 10px;border-radius:6px;border:none;background:#0ea5a6;color:#042027;font-weight:700;cursor:pointer;}
 button:disabled{opacity:0.5;cursor:default;}
@@ -68,52 +42,50 @@ input[type=number]{width:60px;padding:4px;border-radius:4px;border:none;font-wei
 </style>
 </head>
 <body>
-
 <h1>Ultimate Blackjack</h1>
 <button id="keySettingsBtn">Custom Keys</button>
 <button id="themeToggleBtn">Toggle Theme</button>
 
 <div class="bet-chips">
-  Chips: <span id="chips">1000</span> | Bet: <input type="number" id="betInput" min="1" max="1000" value="10">
-  <button id="preset10">10</button>
-  <button id="preset50">50</button>
-  <button id="preset100">100</button>
+Chips: <span id="chips">1000</span> | Bet: <input type="number" id="betInput" min="1" max="1000" value="10">
+<button id="preset10">10</button>
+<button id="preset50">50</button>
+<button id="preset100">100</button>
 </div>
 
 <div id="dealerHistory">Dealer Last Cards: </div>
 
 <div class="table" id="dealerPanel">
-  <div class="hand">
-    <strong>Dealer</strong> <span class="score" id="dealerScore">—</span>
-    <div class="cards" id="dealerCards"></div>
-  </div>
+<div class="hand">
+<strong>Dealer</strong> <span class="score" id="dealerScore">—</span>
+<div class="cards" id="dealerCards"></div>
+</div>
 </div>
 
 <div class="table" id="playerPanel"></div>
 
 <div class="controls">
-  <button id="dealBtn">Deal</button>
-  <button id="hitBtn" disabled>Hit</button>
-  <button id="standBtn" disabled>Stand</button>
-  <button id="doubleBtn" disabled>Double Down</button>
-  <button id="splitBtn" disabled>Split</button>
-  <button id="restartBtn">Restart</button>
+<button id="dealBtn">Deal</button>
+<button id="hitBtn" disabled>Hit</button>
+<button id="standBtn" disabled>Stand</button>
+<button id="doubleBtn" disabled>Double Down</button>
+<button id="splitBtn" disabled>Split</button>
+<button id="restartBtn">Restart</button>
 </div>
 
 <div class="status" id="status">Set your bet and press Deal.</div>
 <div id="stats">Wins: 0 | Losses: 0 | Blackjacks: 0</div>
 <div id="notification" class="notification"></div>
 
-<!-- Key modal -->
 <div id="keyModal">
-  <div class="modal-content">
-    <label>Hit: <input id="keyHit" maxlength="1" value="h"></label>
-    <label>Stand: <input id="keyStand" maxlength="1" value="s"></label>
-    <label>Double: <input id="keyDouble" maxlength="1" value="d"></label>
-    <label>Split: <input id="keySplit" maxlength="1" value="p"></label>
-    <label>Redeal: <input id="keyRedeal" maxlength="1" value="r"></label>
-    <button id="saveKeysBtn">Save Keys</button>
-  </div>
+<div class="modal-content">
+<label>Hit: <input id="keyHit" maxlength="1" value="h"></label>
+<label>Stand: <input id="keyStand" maxlength="1" value="s"></label>
+<label>Double: <input id="keyDouble" maxlength="1" value="d"></label>
+<label>Split: <input id="keySplit" maxlength="1" value="p"></label>
+<label>Redeal: <input id="keyRedeal" maxlength="1" value="r"></label>
+<button id="saveKeysBtn">Save Keys</button>
+</div>
 </div>
 
 <audio id="sndHit" src="https://freesound.org/data/previews/65/65963_634166-lq.mp3"></audio>
@@ -121,11 +93,15 @@ input[type=number]{width:60px;padding:4px;border-radius:4px;border:none;font-wei
 <audio id="sndLose" src="https://freesound.org/data/previews/151/151022_2512250-lq.mp3"></audio>
 
 <script>
-// --- Variables ---
-const SUITS=['♠','♥','♦','♣'],RANKS=[{r:'A',value:11},{r:'2',value:2},{r:'3',value:3},{r:'4',value:4},{r:'5',value:5},{r:'6',value:6},{r:'7',value:7},{r:'8',value:8},{r:'9',value:9},{r:'10',value:10},{r:'J',value:10},{r:'Q',value:10},{r:'K',value:10}];
-let deck=[],dealer=[],playerHands=[],currentHandIndex=0,gameOver=true,chips=1000,stats={wins:0,losses:0,blackjacks:0},dealerHistory=[];
+// === FULL GAME LOGIC ===
+
+// -- Variables --
+const SUITS=['♠','♥','♦','♣'];
+const RANKS=[{r:'A',v:11},{r:'2',v:2},{r:'3',v:3},{r:'4',v:4},{r:'5',v:5},{r:'6',v:6},{r:'7',v:7},{r:'8',v:8},{r:'9',v:9},{r:'10',v:10},{r:'J',v:10},{r:'Q',v:10},{r:'K',v:10}];
+let deck=[], dealer=[], playerHands=[], currentHandIndex=0, gameOver=true, chips=1000, stats={wins:0,losses:0,blackjacks:0}, dealerHistory=[];
 let keyMap={hit:'h',stand:'s',double:'d',split:'p',redeal:'r'};
 
+// -- DOM --
 const dealerCardsEl=document.getElementById('dealerCards');
 const dealerScoreEl=document.getElementById('dealerScore');
 const playerPanelEl=document.getElementById('playerPanel');
@@ -152,11 +128,11 @@ const sndHit=document.getElementById('sndHit');
 const sndWin=document.getElementById('sndWin');
 const sndLose=document.getElementById('sndLose');
 
-// --- Utility ---
-function buildDeck(){const d=[];for(const s of SUITS)for(const r of RANKS)d.push({suit:s,rank:r.r,value:r.value});return d;}
+// -- Utility Functions --
+function buildDeck(){const d=[];for(const s of SUITS)for(const r of RANKS)d.push({suit:s,rank:r.r,value:r.v});return d;}
 function shuffle(deck){for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}}
-function dealCard(to){if(deck.length===0){deck=buildDeck();shuffle(deck);}const card=deck.pop();to.push(card);return card;}
-function calculateScore(hand){let sum=0,aces=0;for(const c of hand){sum+=c.value;if(c.rank==='A')aces++;}while(sum>21&&aces>0){sum-=10;aces--;}return sum;}
+function calcScore(hand){let sum=0,aces=0;for(const c of hand){sum+=c.value;if(c.rank==='A')aces++;}while(sum>21&&aces>0){sum-=10;aces--;}return sum;}
+function renderCard(card,hidden=false){const div=document.createElement('div');div.className='card'+(hidden?' hidden-card':'');if(!hidden&&(card.suit==='♥'||card.suit==='♦')) div.classList.add('red');div.innerHTML=`<div class="top-left">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div><div class="center">${hidden?'&nbsp;':card.suit}</div><div class="bottom-right">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>`;return div;}
 function showNotification(msg,color='#f00'){notificationEl.textContent=msg;notificationEl.style.color=color;notificationEl.style.opacity=1;setTimeout(()=>notificationEl.style.opacity=0,800);}
 function updateChips(){chipsEl.textContent=chips;}
 function saveChips(){localStorage.setItem('bjChips',chips);}
@@ -166,28 +142,198 @@ function updateDealerHistory(){dealerHistoryEl.textContent='Dealer Last Cards: '
 function animateCard(cardEl){cardEl.classList.add('animate');setTimeout(()=>cardEl.classList.remove('animate'),200);}
 function toggleTheme(){document.body.classList.toggle('light');}
 
-// --- Render Card with red hearts/diamonds ---
-function renderCard(card, hidden=false){
-  const div = document.createElement('div');
-  div.className = 'card' + (hidden ? ' hidden-card' : '');
-  if(!hidden && (card.suit==='♥'||card.suit==='♦')) div.classList.add('red');
-  div.innerHTML = `
-    <div class="top-left">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>
-    <div class="center">${hidden?'&nbsp;':card.suit}</div>
-    <div class="bottom-right">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>
-  `;
-  return div;
+// -- Initialization --
+deck=buildDeck();shuffle(deck);loadChips();updateStats();
+
+// === FULL GAMEPLAY LOGIC ===
+
+// -- Utility --
+function resetGame(){
+    deck = buildDeck();
+    shuffle(deck);
+    dealer = [];
+    playerHands = [];
+    currentHandIndex = 0;
+    gameOver = false;
+    dealerCardsEl.innerHTML = '';
+    dealerScoreEl.textContent = '—';
+    playerPanelEl.innerHTML = '';
+    statusEl.textContent = 'Game started! Make your move.';
+    hitBtn.disabled = true;
+    standBtn.disabled = true;
+    doubleBtn.disabled = true;
+    splitBtn.disabled = true;
 }
 
-// --- Rest of game logic (deal, hit, stand, double, split, bets, dealer AI, etc.) ---
-// Due to length, the remaining full game JS (all your requested features) can be added here similarly.
+// -- Deal --
+dealBtn.addEventListener('click', () => {
+    let bet = parseInt(betInput.value);
+    if (bet > chips) { showNotification('Not enough chips'); return; }
+    chips -= bet; updateChips(); saveChips();
+    resetGame();
 
-// --- Initialize ---
-deck=buildDeck();
-shuffle(deck);
-loadChips();
-updateStats();
-dealerHistory=[];
+    // Create first hand
+    playerHands.push({cards:[],bet:bet,double:false,stand:false});
+    // Deal initial cards
+    dealCard(playerHands[0]); dealCard(playerHands[0]);
+    dealer.push(dealCard([])); dealer.push(dealCard([]));
+
+    renderHands();
+    renderDealer();
+    checkBlackjackInitial();
+    enablePlayerButtons();
+});
+
+// -- Render hands --
+function renderHands(){
+    playerPanelEl.innerHTML = '';
+    playerHands.forEach((hand,index)=>{
+        const div=document.createElement('div'); div.className='hand';
+        div.innerHTML=`<strong>Hand ${index+1}</strong> <span class="score">${calcScore(hand.cards)}</span>`;
+        const cardsDiv=document.createElement('div'); cardsDiv.className='cards';
+        hand.cards.forEach(c=>cardsDiv.appendChild(renderCard(c)));
+        div.appendChild(cardsDiv);
+        playerPanelEl.appendChild(div);
+    });
+}
+
+// -- Render dealer --
+function renderDealer(hideSecond=true){
+    dealerCardsEl.innerHTML='';
+    dealer.forEach((c,i)=>{
+        dealerCardsEl.appendChild(renderCard(c, i===1 && hideSecond));
+    });
+    if(!hideSecond) dealerScoreEl.textContent = calcScore(dealer);
+}
+
+// -- Enable player buttons --
+function enablePlayerButtons(){
+    hitBtn.disabled = false;
+    standBtn.disabled = false;
+    doubleBtn.disabled = playerHands[currentHandIndex].cards.length===2?false:true;
+    splitBtn.disabled = canSplit(playerHands[currentHandIndex])?false:true;
+}
+
+// -- Check if hand can split --
+function canSplit(hand){ return hand.cards.length===2 && hand.cards[0].rank===hand.cards[1].rank && playerHands.length<4; }
+
+// -- Hit --
+hitBtn.addEventListener('click', () => {
+    dealCard(playerHands[currentHandIndex]);
+    renderHands();
+    sndHit.play();
+    checkBustOrContinue();
+});
+
+// -- Stand --
+standBtn.addEventListener('click', () => {
+    playerHands[currentHandIndex].stand = true;
+    nextHandOrDealer();
+});
+
+// -- Double Down --
+doubleBtn.addEventListener('click', () => {
+    let hand = playerHands[currentHandIndex];
+    if(chips < hand.bet){ showNotification('Not enough chips'); return; }
+    chips -= hand.bet; hand.bet *= 2; hand.double = true; updateChips(); saveChips();
+    dealCard(hand);
+    renderHands();
+    sndHit.play();
+    hand.stand = true;
+    nextHandOrDealer();
+});
+
+// -- Split --
+splitBtn.addEventListener('click', () => {
+    let hand = playerHands[currentHandIndex];
+    if(!canSplit(hand)){ showNotification('Cannot split'); return; }
+    let cardToMove = hand.cards.pop();
+    let newHand = {cards:[cardToMove],bet:hand.bet,double:false,stand:false};
+    dealCard(hand); dealCard(newHand);
+    playerHands.splice(currentHandIndex+1,0,newHand);
+    renderHands();
+    enablePlayerButtons();
+});
+
+// -- Check bust or continue --
+function checkBustOrContinue(){
+    let hand = playerHands[currentHandIndex];
+    let score = calcScore(hand.cards);
+    if(score>21){
+        hand.stand=true;
+        showNotification('BUST!', '#f00');
+        nextHandOrDealer();
+    }
+}
+
+// -- Next hand or dealer turn --
+function nextHandOrDealer(){
+    if(currentHandIndex<playerHands.length-1){
+        currentHandIndex++;
+        enablePlayerButtons();
+    } else {
+        hitBtn.disabled=true; standBtn.disabled=true; doubleBtn.disabled=true; splitBtn.disabled=true;
+        dealerTurn();
+    }
+}
+
+// -- Dealer AI --
+function dealerTurn(){
+    renderDealer(false);
+    while(calcScore(dealer)<17 || (calcScore(dealer)===17 && dealer.some(c=>c.rank==='A'))){
+        dealer.push(dealCard([]));
+        renderDealer(false);
+    }
+    evaluateHands();
+}
+
+// -- Evaluate outcome --
+function evaluateHands(){
+    const dealerScore = calcScore(dealer);
+    playerHands.forEach(hand=>{
+        const playerScore = calcScore(hand.cards);
+        if(playerScore>21){ showNotification('You lose', '#f00'); sndLose.play(); stats.losses++; }
+        else if(dealerScore>21 || playerScore>dealerScore){ 
+            let payout = hand.cards.length===2 && playerScore===21?hand.bet*2.5:hand.bet*2;
+            chips += payout; updateChips(); saveChips(); showNotification('You win!', '#0f0'); sndWin.play(); stats.wins++;
+        } else if(playerScore===dealerScore){ chips+=hand.bet; updateChips(); showNotification('Push', '#ff0'); }
+        else{ showNotification('You lose', '#f00'); sndLose.play(); stats.losses++; }
+    });
+    dealerHistory = dealer.slice(); updateDealerHistory();
+    updateStats();
+}
+
+// -- Restart --
+restartBtn.addEventListener('click', () => { chips=1000; updateChips(); saveChips(); stats={wins:0,losses:0,blackjacks:0}; updateStats(); dealerHistory=[]; updateDealerHistory(); statusEl.textContent='Set your bet and press Deal.'; playerPanelEl.innerHTML=''; dealerCardsEl.innerHTML=''; });
+
+// -- Preset bets --
+preset10.addEventListener('click', ()=>betInput.value=10);
+preset50.addEventListener('click', ()=>betInput.value=50);
+preset100.addEventListener('click', ()=>betInput.value=100);
+
+// -- Keyboard shortcuts --
+document.addEventListener('keydown',(e)=>{
+    if(gameOver && e.key.toLowerCase()===keyMap.redeal){dealBtn.click(); return;}
+    if(e.key.toLowerCase()===keyMap.hit && !hitBtn.disabled) hitBtn.click();
+    if(e.key.toLowerCase()===keyMap.stand && !standBtn.disabled) standBtn.click();
+    if(e.key.toLowerCase()===keyMap.double && !doubleBtn.disabled) doubleBtn.click();
+    if(e.key.toLowerCase()===keyMap.split && !splitBtn.disabled) splitBtn.click();
+});
+
+// -- Key customization --
+keySettingsBtn.addEventListener('click',()=>{keyModal.style.display='flex';});
+saveKeysBtn.addEventListener('click',()=>{
+    keyMap.hit=document.getElementById('keyHit').value.toLowerCase();
+    keyMap.stand=document.getElementById('keyStand').value.toLowerCase();
+    keyMap.double=document.getElementById('keyDouble').value.toLowerCase();
+    keyMap.split=document.getElementById('keySplit').value.toLowerCase();
+    keyMap.redeal=document.getElementById('keyRedeal').value.toLowerCase();
+    keyModal.style.display='none';
+});
+
+// -- Theme toggle --
+themeToggleBtn.addEventListener('click',toggleTheme);
+
 </script>
 </body>
 </html>
