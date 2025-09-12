@@ -193,6 +193,58 @@ themeToggleBtn.addEventListener('click',toggleTheme);
 // --- Load chips from storage ---
 loadChips();
 updateStats();
+// --- Upgrade cards to red for hearts/diamonds and add details ---
+const style = document.createElement('style');
+style.textContent = `
+.card {
+  width: 60px;
+  height: 85px;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  position: relative;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+.card.red { color: #e11d48; }
+.card .top-left,
+.card .bottom-right { font-size: 14px; position: absolute; }
+.card .top-left { top: 4px; left: 4px; }
+.card .bottom-right { bottom: 4px; right: 4px; transform: rotate(180deg); }
+.card .center { font-size: 24px; }
+.hidden-card {
+  background: linear-gradient(135deg,#334155,#0f1724);
+  color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+.hidden-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);
+}`;
+document.head.appendChild(style);
+
+// override renderCard function
+function renderCard(card, hidden=false){
+  const div = document.createElement('div');
+  div.className = 'card' + (hidden ? ' hidden-card' : '');
+  if(!hidden && (card.suit === '♥' || card.suit === '♦')) div.classList.add('red');
+
+  div.innerHTML = `
+    <div class="top-left">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>
+    <div class="center">${hidden?'&nbsp;':card.suit}</div>
+    <div class="bottom-right">${hidden?'&nbsp;':card.rank}<br>${hidden?'&nbsp;':card.suit}</div>
+  `;
+  return div;
+}
 </script>
 </body>
 </html>
