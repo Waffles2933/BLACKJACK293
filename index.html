@@ -232,7 +232,6 @@ style.textContent = `
 }`;
 document.head.appendChild(style);
 
-// override renderCard function
 function renderCard(card, hidden=false){
   const div = document.createElement('div');
   div.className = 'card' + (hidden ? ' hidden-card' : '');
