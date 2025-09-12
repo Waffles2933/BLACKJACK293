@@ -440,6 +440,18 @@ document.addEventListener('keydown',(e)=>{
   if(e.key.toLowerCase()===keyMap.double && !doubleBtn.disabled) doubleBtn.click();
   if(e.key.toLowerCase()===keyMap.split && !splitBtn.disabled) splitBtn.click();
 });
+document.addEventListener('keydown',(e)=>{
+  const key = e.key.toLowerCase();
+
+  // Always allow redeal
+  if(key === keyMap.redeal){ dealBtn.click(); return; }
+
+  // Player actions only if buttons are enabled
+  if(key === keyMap.hit && !hitBtn.disabled) hitBtn.click();
+  if(key === keyMap.stand && !standBtn.disabled) standBtn.click();
+  if(key === keyMap.double && !doubleBtn.disabled) doubleBtn.click();
+  if(key === keyMap.split && !splitBtn.disabled) splitBtn.click();
+});
 
 // ===== Key Customization =====
 keySettingsBtn.addEventListener('click',()=>{ keyModal.style.display='flex'; });
