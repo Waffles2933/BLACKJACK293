@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Blackjack</title>
 <style>
+#switchGames {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+}
+#switchGames button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #0ea5a6;
+  color: #042027;
+  font-weight: 700;
+  cursor: pointer;
+}
+    
 body {
     font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial;
     background:#0b1220;
@@ -129,6 +146,11 @@ input[type=number] { width:60px; padding:4px; border-radius:4px; border:none; fo
 </style>
 </head>
 <body>
+<div id="switchGames">
+  <button onclick="window.location.href='poker.html'">Switch to Poker</button>
+  <button onclick="window.location.href='roulette.html'">Switch to Roulette</button>
+</div>
+    
 <h1>Ultimate Blackjack</h1>
 <button id="keySettingsBtn">Custom Keys</button>
 <button id="themeToggleBtn">Toggle Theme</button>
