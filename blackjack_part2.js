@@ -1,4 +1,4 @@
-// === PART 2: FULL GAMEPLAY JS ===
+// === BLACKJACK PART 2: PART A ===
 
 // Utility variables
 const SUITS = ['♠','♥','♦','♣'];
@@ -161,4 +161,129 @@ function enablePlayerButtons(){
 }
 
 // ===== Player Actions =====
-hitBt
+hitBtn.addEventListener('click',()=>{
+  const hand=playerHands[currentHandIndex];
+  dealCard(hand);
+  renderHands();
+  sndHit.play();
+  checkBustOrContinue();
+});
+
+standBtn.addEventListener('click',()=>{
+  playerHands[currentHandIndex].stand=true;
+  nextHandOrDealer();
+});
+// === BLACKJACK PART 2: PART B ===
+
+// ===== Player Actions Continued =====
+doubleBtn.addEventListener('click',()=>{
+  const hand=playerHands[currentHandIndex];
+  if(chips<hand.bet){ showNotification('Not enough chips','#f00'); return; }
+  chips-=hand.bet; hand.bet*=2; hand.double=true; updateChips();
+  dealCard(hand); renderHands(); sndHit.play();
+  hand.stand=true; nextHandOrDealer();
+});
+
+splitBtn.addEventListener('click',()=>{
+  const hand=playerHands[currentHandIndex];
+  const card=hand.cards.pop();
+  const newHand={cards:[card], bet:hand.bet, double:false, stand:false};
+  dealCard(hand); dealCard(newHand);
+  playerHands.splice(currentHandIndex+1,0,newHand);
+  renderHands(); enablePlayerButtons();
+});
+
+// ===== Bust / Next =====
+function checkBustOrContinue(){
+  const hand=playerHands[currentHandIndex];
+  if(calcScore(hand.cards)>21){
+    hand.stand=true; showNotification('BUST','#f00');
+    nextHandOrDealer();
+  }
+}
+
+function nextHandOrDealer(){
+  if(currentHandIndex<playerHands.length-1){
+    currentHandIndex++; enablePlayerButtons();
+  } else { 
+    hitBtn.disabled=true; standBtn.disabled=true; doubleBtn.disabled=true; splitBtn.disabled=true;
+    dealerTurn();
+  }
+}
+
+// ===== Dealer AI =====
+function dealerTurn(){
+  renderDealer(false);
+  while(calcScore(dealer)<17 || (calcScore(dealer)===17 && dealer.some(c=>c.rank==='A'))){
+    dealer.push(dealCard());
+    renderDealer(false);
+  }
+  evaluateHands();
+}
+
+// ===== Evaluate outcome =====
+function evaluateHands(){
+  const dealerScore=calcScore(dealer);
+  playerHands.forEach(hand=>{
+    const playerScore=calcScore(hand.cards);
+    if(playerScore>21){ showNotification('You lose','#f00'); sndLose.play(); stats.losses++; }
+    else if(dealerScore>21 || playerScore>dealerScore){
+      const payout=(hand.cards.length===2 && playerScore===21)?hand.bet*2.5:hand.bet*2;
+      chips+=payout; updateChips(); showNotification('You win!','#0f0'); sndWin.play(); stats.wins++;
+    }
+    else if(playerScore===dealerScore){ chips+=hand.bet; updateChips(); showNotification('Push','#ff0'); }
+    else{ showNotification('You lose','#f00'); sndLose.play(); stats.losses++; }
+  });
+  dealerHistory=dealer.slice(); updateDealerHistory(); updateStats();
+}
+
+// ===== Restart / Presets =====
+restartBtn.addEventListener('click',()=>{
+  chips=1000; updateChips(); stats={wins:0,losses:0,blackjacks:0}; updateStats(); dealerHistory=[]; updateDealerHistory();
+  statusEl.textContent='Set your bet and press Deal.'; playerPanelEl.innerHTML=''; dealerCardsEl.innerHTML='';
+});
+
+preset10.addEventListener('click',()=>betInput.value=10);
+preset50.addEventListener('click',()=>betInput.value=50);
+preset100.addEventListener('click',()=>betInput.value=100);
+
+// ===== Keyboard Shortcuts =====
+document.addEventListener('keydown',(e)=>{
+  const key = e.key.toLowerCase();
+
+  // Always allow redeal
+  if(key === keyMap.redeal){ dealBtn.click(); return; }
+
+  // Player actions only if buttons are enabled
+  if(key === keyMap.hit && !hitBtn.disabled) hitBtn.click();
+  if(key === keyMap.stand && !standBtn.disabled) standBtn.click();
+  if(key === keyMap.double && !doubleBtn.disabled) doubleBtn.click();
+  if(key === keyMap.split && !splitBtn.disabled) splitBtn.click();
+});
+
+// ===== Key Customization =====
+keySettingsBtn.addEventListener('click',()=>{ keyModal.style.display='flex'; });
+saveKeysBtn.addEventListener('click',()=>{
+  keyMap.hit=document.getElementById('keyHit').value.toLowerCase();
+  keyMap.stand=document.getElementById('keyStand').value.toLowerCase();
+  keyMap.double=document.getElementById('keyDouble').value.toLowerCase();
+  keyMap.split=document.getElementById('keySplit').value.toLowerCase();
+  keyMap.redeal=document.getElementById('keyRedeal').value.toLowerCase();
+  keyModal.style.display='none';
+});
+
+// ===== Theme Toggle =====
+themeToggleBtn.addEventListener('click',()=>{ document.body.classList.toggle('light'); });
+
+// ===== Game Switch Buttons =====
+const switchContainer=document.createElement('div');
+switchContainer.style="margin-top:10px; text-align:center;";
+const pokerBtn=document.createElement('button');
+pokerBtn.textContent='Switch to Poker';
+pokerBtn.onclick=()=>window.location.href='poker.html';
+const rouletteBtn=document.createElement('button');
+rouletteBtn.textContent='Switch to Roulette';
+rouletteBtn.onclick=()=>window.location.href='roulette.html';
+switchContainer.appendChild(pokerBtn);
+switchContainer.appendChild(rouletteBtn);
+document.body.appendChild(switchContainer);
