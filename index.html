@@ -2,22 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Casino Games Menu</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Menu</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; background:#111; color:#f8f8f8; text-align:center; padding:40px; }
-    h1 { margin-bottom:20px; }
-    .menu { display:flex; flex-direction:column; gap:16px; max-width:300px; margin:auto; }
-    a { padding:12px; background:#0ea5a6; color:#042027; font-weight:bold; text-decoration:none; border-radius:8px; }
-    a:hover { background:#14b8b8; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: #f8f8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .menu {
+      text-align: center;
+      background: #132542;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      background: #0ea5a6;
+      color: #042027;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #14b8b8;
+    }
   </style>
 </head>
 <body>
-  <h1>🎲 Casino Games</h1>
   <div class="menu">
-    <a href="blackjack.html">♠ Blackjack</a>
-    <a href="poker.html">♥ Poker</a>
-    <a href="roulette.html">♦ Roulette</a>
+    <h1>🎲 Game Menu</h1>
+    <button onclick="location.href='blackjack.html'">Blackjack</button>
+    <button onclick="location.href='poker.html'">Poker</button>
+    <button onclick="location.href='roulette.html'">Roulette</button>
   </div>
 </body>
 </html>
