@@ -1,1 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Poker (Basic)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; background:#0b1220; color:#f8f8f8; margin:0; padding:20px; text-align:center; }
+    h1 { margin-bottom:12px; }
+    .table { background:#132542; padding:20px; border-radius:12px; max-width:800px; margin:auto; }
+    .player { margin:12px 0; }
+    .cards { display:inline-flex; gap:8px; }
+    .card { width:60px; height:85px; border-radius:6px; background:#fff; color:#000; display:flex; flex-direction:column; justify-content:space-between; padding:6px; font-weight:bold; }
+    .card .suit { font-size:18px; text-align:center; }
+    .red { color:red; }
+    button { margin-top:15px; padding:8px 14px; font-weight:bold; border:none; border-radius:6px; background:#0ea5a6; color:#042027; cursor:pointer; }
+    button:hover { background:#14b8b8; }
+    .community { margin:16px 0; }
+    .status { margin-top:12px; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <h1>Poker — Basic Deal</h1>
+  <div class="table">
+    <div class="player" id="p0">You: <div class="cards" id="p0cards"></div></div>
+    <div class="player" id="p1">AI 1: <div class="cards" id="p1cards"></div></div>
+    <div class="player" id="p2">AI 2: <div class="cards" id="p2cards"></div></div>
+    <div class="player" id="p3">AI 3: <div class="cards" id="p3cards"></div></div>
+    <div class="player" id="p4">AI 4: <div class="cards" id="p4cards"></div></div>
+    <div class="community">Community: <div class="cards" id="community"></div></div>
+    <button onclick="deal()">Deal</button>
+    <div class="status" id="status">Press Deal to start.</div>
+  </div>
 
+<script>
+const suits = ["♠","♥","♦","♣"];
+const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+
+function createDeck() {
+  let deck = [];
+  for (let s of suits) {
+    for (let r of ranks) {
+      deck.push({rank:r, suit:s});
+    }
+  }
+  return deck;
+}
+
+function shuffle(deck) {
+  for (let i = deck.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+function renderCard(card) {
+  let red = (card.suit==="♥" || card.suit==="♦") ? "red" : "";
+  return `<div class="card ${red}"><div>${card.rank}</div><div class="suit">${card.suit}</div></div>`;
+}
+
+function deal() {
+  let deck = shuffle(createDeck());
+  let players = [[],[],[],[],[]]; // you + 4 AI
+  for (let i=0; i<2; i++) { // 2 hole cards each
+    for (let p=0; p<5; p++) {
+      players[p].push(deck.pop());
+    }
+  }
+  let community = [];
+  // Flop
+  deck.pop(); // burn
+  for (let i=0;i<3;i++) community.push(deck.pop());
+  // Turn
+  deck.pop();
+  community.push(deck.pop());
+  // River
+  deck.pop();
+  community.push(deck.pop());
+
+  // Render
+  for (let p=0;p<5;p++) {
+    document.getElementById("p"+p+"cards").innerHTML = players[p].map(renderCard).join("");
+  }
+  document.getElementById("community").innerHTML = community.map(renderCard).join("");
+  document.getElementById("status").textContent = "Cards dealt. (No AI betting yet — winner eval can be added later)";
+}
+<script>
+// === Poker Betting + Hand Evaluation ===
+let chips = [1000,1000,1000,1000,1000]; // you + 4 AI
+let pot = 0;
+let betAmount = 100;
+
+function setBet(amount) {
+  betAmount = amount;
+  document.getElementById("status").textContent = "Bet set to " + betAmount;
+}
+
+function handRank(cards) {
+  // Evaluate a 7-card hand -> return a score number and description
+  const values = "23456789TJQKA";
+  const suitsCount = {};
+  const counts = {};
+  let vals = cards.map(c => values.indexOf(c.rank[0])).sort((a,b)=>a-b);
+  vals.forEach(v => counts[v] = (counts[v]||0)+1);
+  cards.forEach(c => suitsCount[c.suit] = (suitsCount[c.suit]||0)+1);
+
+  let flushSuit = Object.keys(suitsCount).find(s=>suitsCount[s]>=5);
+  let flushCards = flushSuit ? vals.filter((_,i)=>cards[i].suit===flushSuit) : [];
+
+  // Straight detection
+  let uniq = [...new Set(vals)];
+  if (uniq.includes(12)) uniq.unshift(-1); // Ace-low straight
+  let straight = -1;
+  for (let i=0;i<uniq.length-4;i++) {
+    if (uniq[i]+4===uniq[i+4]) straight = uniq[i+4];
+  }
+
+  // Score levels: [rank, highCard]
+  let score = [0, Math.max(...vals)];
+  let desc = "High Card";
+
+  let four = Object.entries(counts).find(([v,c])=>c===4);
+  let three = Object.entries(counts).find(([v,c])=>c===3);
+  let pairs = Object.entries(counts).filter(([v,c])=>c===2);
+
+  if (flushSuit && straight>=0) { score=[8,straight]; desc="Straight Flush"; }
+  else if (four) { score=[7,parseInt(four[0])]; desc="Four of a Kind"; }
+  else if (three && pairs.length) { score=[6,parseInt(three[0])]; desc="Full House"; }
+  else if (flushSuit) { score=[5,Math.max(...flushCards)]; desc="Flush"; }
+  else if (straight>=0) { score=[4,straight]; desc="Straight"; }
+  else if (three) { score=[3,parseInt(three[0])]; desc="Three of a Kind"; }
+  else if (pairs.length>=2) { score=[2,Math.max(...pairs.map(p=>parseInt(p[0])))]; desc="Two Pair"; }
+  else if (pairs.length===1) { score=[1,parseInt(pairs[0][0])]; desc="One Pair"; }
+
+  return {score,desc};
+}
+
+function determineWinner(players,community) {
+  let results = [];
+  for (let p=0;p<players.length;p++) {
+    let hand = [...players[p],...community];
+    let evald = handRank(hand);
+    results.push({player:p,score:evald.score,desc:evald.desc});
+  }
+  results.sort((a,b)=>{
+    if (b.score[0]!==a.score[0]) return b.score[0]-a.score[0];
+    return b.score[1]-a.score[1];
+  });
+  let top = results[0];
+  let winners = results.filter(r=>r.score[0]===top.score[0] && r.score[1]===top.score[1]);
+  return winners;
+}
+
+// Override deal() to include betting + eval
+function deal() {
+  let deck = shuffle(createDeck());
+  let players = [[],[],[],[],[]]; // you + 4 AI
+  for (let i=0; i<2; i++) { // hole cards
+    for (let p=0; p<5; p++) {
+      players[p].push(deck.pop());
+    }
+  }
+  let community = [];
+  deck.pop(); for (let i=0;i<3;i++) community.push(deck.pop()); // flop
+  deck.pop(); community.push(deck.pop()); // turn
+  deck.pop(); community.push(deck.pop()); // river
+
+  // Render
+  for (let p=0;p<5;p++) {
+    document.getElementById("p"+p+"cards").innerHTML = players[p].map(renderCard).join("");
+  }
+  document.getElementById("community").innerHTML = community.map(renderCard).join("");
+
+  // Betting
+  pot = betAmount*5;
+  for (let i=0;i<5;i++) chips[i]-=betAmount;
+
+  let winners = determineWinner(players,community);
+  let splitPot = Math.floor(pot/winners.length);
+  winners.forEach(w=>chips[w.player]+=splitPot);
+
+  let msg = "Winner: ";
+  if (winners.length>1) msg="Tie between: ";
+  msg += winners.map(w=>"Player "+(w.player===0?"You":w.player)).join(", ");
+  msg += " with "+winners[0].desc;
+  msg += " | Pot: "+pot;
+
+  let chipMsg = " | Chips: "+chips.map((c,i)=> (i===0?"You":"AI"+i)+":"+c).join(" ");
+  document.getElementById("status").textContent = msg + chipMsg;
+}
+
+</script>
+</body>
+</html>
