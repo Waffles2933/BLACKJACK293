@@ -28,6 +28,10 @@
     <div class="player" id="p3">AI 3: <div class="cards" id="p3cards"></div></div>
     <div class="player" id="p4">AI 4: <div class="cards" id="p4cards"></div></div>
     <div class="community">Community: <div class="cards" id="community"></div></div>
+  <div style="margin:12px 0;">
+  Bet: <input type="number" id="betInput" value="100" min="10" step="10" style="width:80px;">
+  <button onclick="setBet(parseInt(document.getElementById('betInput').value))">Set Bet</button>
+</div>
     <button onclick="deal()">Deal</button>
     <div class="status" id="status">Press Deal to start.</div>
   </div>
