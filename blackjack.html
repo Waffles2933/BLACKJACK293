@@ -467,7 +467,24 @@ themeToggleBtn.addEventListener('click',()=>{ document.body.classList.toggle('li
 </div>    
     
 </script>
+    <body>
+  <h1>Ultimate Blackjack</h1>
+  <button id="keySettingsBtn">Custom Keys</button>
+  <button id="themeToggleBtn">Toggle Theme</button>
+
+  <!-- ADD THESE BUTTONS HERE -->
+  <div style="margin-top:10px; text-align:center;">
     <button onclick="window.location.href='poker.html'">Switch to Poker</button>
-<button onclick="window.location.href='roulette.html'">Switch to Roulette</button>
+    <button onclick="window.location.href='roulette.html'">Switch to Roulette</button>
+  </div>
+
+  <div class="bet-chips">
+    Chips: <span id="chips">1000</span> | Bet: <input type="number" id="betInput" min="1" max="1000" value="10">
+    <button id="preset10">10</button>
+    <button id="preset50">50</button>
+    <button id="preset100">100</button>
+  </div>
+
+  </script>
 </body>
 </html>
