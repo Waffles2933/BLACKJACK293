@@ -1,4 +1,6 @@
-/* === BODY & GENERAL STYLING === */
+/* ==================== */
+/*        BODY          */
+/* ==================== */
 body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
     background: #0b1220;
@@ -7,6 +9,13 @@ body {
     flex-direction: column;
     align-items: center;
     padding: 20px;
+    transition: background 0.3s, color 0.3s;
+    position: relative; /* needed for absolute children like notifications */
+}
+
+body.light {
+    background: #f0f0f0;
+    color: #000;
 }
 
 h1 {
@@ -14,55 +23,54 @@ h1 {
     margin-bottom: 10px;
 }
 
-/* === BET & CHIPS === */
-.bet-chips {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.bet-chips input[type=number] {
-    width: 60px;
-    padding: 4px;
-    border-radius: 4px;
-    border: none;
-    font-weight: 700;
-}
-
-button {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: none;
-    background: #0ea5a6;
-    color: #042027;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: default;
-}
-
-/* === TABLE & CARDS === */
-#table {
+/* ==================== */
+/*       TABLES         */
+/* ==================== */
+.table {
     width: 90%;
-    max-width: 1000px;
+    max-width: 1200px;
     background: #0f1724;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
+    gap: 12px;
+}
+
+body.light .table {
+    background: #fff;
+    color: #000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* ==================== */
+/*       HANDS          */
+/* ==================== */
+.hand {
+    background: #071026;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    transition: border 0.2s;
+}
+
+body.light .hand {
+    background: #e0e0e0;
 }
 
 .cards {
     display: flex;
     gap: 6px;
+    flex-wrap: wrap;
     margin-top: 6px;
 }
 
+/* ==================== */
+/*       CARDS          */
+/* ==================== */
 .card {
     width: 60px;
     height: 85px;
@@ -76,70 +84,192 @@ button:disabled {
     font-weight: 700;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    position: relative;
     font-family: 'Arial Black', Arial, sans-serif;
+    transition: transform 0.2s;
 }
 
-.card.red { color: #e11d48; }
+.card.red {
+    color: #e11d48;
+}
 
-.card .top-left, .card .bottom-right { font-size: 14px; position: absolute; }
+.card .top-left, .card .bottom-right {
+    font-size: 14px;
+    position: absolute;
+}
+
 .card .top-left { top: 4px; left: 4px; }
 .card .bottom-right { bottom: 4px; right: 4px; transform: rotate(180deg); }
 .card .center { font-size: 24px; }
 
+.card.animate { transform: translateY(-10px); }
+
 /* Hidden AI cards */
-.hiddenCards .card {
+.hidden-card {
     background: linear-gradient(135deg,#334155,#0f1724);
     color: transparent;
     position: relative;
+    overflow: hidden;
 }
-.hiddenCards .card::after {
+
+.hidden-card::after {
     content: "";
     position: absolute;
     inset: 0;
     background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);
 }
 
-/* === AI PLAYERS === */
-.aiPlayers {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 15px;
-}
-
-.aiPlayer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-weight: 700;
-}
-
-.aiChips {
-    margin-top: 4px;
-}
-
-/* === PLAYER HAND === */
-#playerHand {
-    margin-top: 10px;
-}
-
-/* === CONTROLS === */
-.controls {
+/* ==================== */
+/*       BUTTONS        */
+/* ==================== */
+.controls, #switchGames {
     display: flex;
     gap: 6px;
-    justify-content: center;
-    margin: 10px 0;
     flex-wrap: wrap;
 }
 
-/* === STATUS & STATS === */
+.controls {
+    justify-content: center;
+    margin: 10px 0;
+}
+
+#switchGames {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    background: #0ea5a6;
+    color: #042027;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover:not(:disabled) {
+    background: #14b8a6;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Key / Theme buttons */
+#keySettingsBtn { 
+    position: absolute; 
+    top: 10px; 
+    right: 120px; 
+    background: #facc15; 
+    color: #042027; 
+}
+
+#themeToggleBtn { 
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+    background: #94a3b8; 
+    color: #042027; 
+}
+
+/* ==================== */
+/*      STATUS/CHIPS    */
+/* ==================== */
 .status {
     text-align: center;
     font-weight: 700;
     margin: 8px 0;
 }
 
-#stats {
-    margin-top: 10px;
+.score {
+    font-weight: 900;
+    color: #9ad1d1;
+    font-size: 20px;
+}
+
+body.light .score {
+    color: #0a9396;
+}
+
+.bet-chips {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+input[type=number] {
+    width: 60px;
+    padding: 4px;
+    border-radius: 4px;
+    border: none;
+    font-weight: 700;
+}
+
+/* ==================== */
+/*      NOTIFICATIONS    */
+/* ==================== */
+#notification {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 30px;
+    font-size: 28px;
+    font-weight: 900;
+    color: #f00;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+/* ==================== */
+/*         MODAL        */
+/* ==================== */
+#keyModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #0f1724;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-content input {
+    width: 60px;
+    padding: 4px;
+    border-radius: 4px;
+    border: none;
+    font-weight: 700;
+}
+
+/* ==================== */
+/*      STATS/DEALER    */
+/* ==================== */
+#stats, #dealerHistory {
     font-size: 14px;
     text-align: center;
+    margin: 6px 0;
+}
+
+/* ==================== */
+/*      RESPONSIVE      */
+/* ==================== */
+@media (max-width: 600px) {
+    .card { width: 50px; height: 70px; font-size: 12px; }
+    .card .center { font-size: 18px; }
+    #keySettingsBtn, #themeToggleBtn, #switchGames button { padding: 4px 6px; font-size: 12px; }
 }
