@@ -359,3 +359,10 @@ function playFullRound(){
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('playFullRoundBtn')?.addEventListener('click', playFullRound);
 });
+
+function dealFlop() {
+  communityCards.push(dealCard(communityCards));
+  communityCards.push(dealCard(communityCards));
+  communityCards.push(dealCard(communityCards));
+  renderCommunity();
+}
