@@ -1,62 +1,152 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>American Roulette</title>
-<link rel="stylesheet" href="roulette.css">
-</head>
-<body>
-  <h1>Ultimate American Roulette</h1>
+/* ==================== */
+/*        BODY          */
+/* ==================== */
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    background: #0b1220;
+    color: #e6eef8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
 
-  <!-- Player Info -->
-  <div class="player-info">
-    Chips: <span id="playerChips">1000</span>
-    Current Bet: <span id="currentBet">0</span>
-  </div>
+h1 {
+    margin-bottom: 20px;
+    text-align: center;
+}
 
-  <div class="game-container">
-    <!-- Roulette Wheel -->
-    <div id="rouletteWheelContainer">
-      <canvas id="rouletteWheel" width="400" height="400"></canvas>
-      <button id="spinBtn">Spin</button>
-    </div>
+/* ==================== */
+/*      CHIP & BET INFO */
+/* ==================== */
+#playerChips, #currentBet {
+    font-weight: 700;
+    font-size: 18px;
+    margin: 5px;
+}
 
-    <!-- Betting Table -->
-    <div id="bettingTableContainer">
-      <!-- American Roulette Table -->
-      <div id="rouletteTable">
-        <div class="column zero-column">
-          <div class="bet-spot" data-number="0">0</div>
-          <div class="bet-spot" data-number="00">00</div>
-        </div>
-        <div class="numbers-grid">
-          <!-- 3x12 numbers 1–36 -->
-          <!-- Rows generated via JS or can be hard-coded -->
-        </div>
-        <!-- Outside bets -->
-        <div class="outside-bets">
-          <div class="bet-spot" data-bet="red">Red</div>
-          <div class="bet-spot" data-bet="black">Black</div>
-          <div class="bet-spot" data-bet="even">Even</div>
-          <div class="bet-spot" data-bet="odd">Odd</div>
-          <div class="bet-spot" data-bet="1to18">1-18</div>
-          <div class="bet-spot" data-bet="19to36">19-36</div>
-          <div class="bet-spot" data-bet="first12">1st 12</div>
-          <div class="bet-spot" data-bet="second12">2nd 12</div>
-          <div class="bet-spot" data-bet="third12">3rd 12</div>
-          <div class="bet-spot" data-bet="col1">Column 1</div>
-          <div class="bet-spot" data-bet="col2">Column 2</div>
-          <div class="bet-spot" data-bet="col3">Column 3</div>
-        </div>
-      </div>
-    </div>
-  </div>
+#notification {
+    margin-top: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #facc15;
+}
 
-  <!-- Notification / Result -->
-  <div id="notification"></div>
+/* ==================== */
+/*       BUTTONS        */
+/* ==================== */
+button {
+    padding: 8px 14px;
+    margin: 4px;
+    border-radius: 6px;
+    border: none;
+    background-color: #0ea5a6;
+    color: #042027;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
 
-  <!-- Scripts -->
-  <script src="roulette.js"></script>
-</body>
-</html>
+button:hover:not(:disabled) {
+    background-color: #14b8a6;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* ==================== */
+/*      ROULETTE WHEEL  */
+/* ==================== */
+#rouletteWheel {
+    border: 4px solid #fff;
+    border-radius: 50%;
+    margin: 20px 0;
+    background: #071026;
+}
+
+/* ==================== */
+/*      BETTING TABLE    */
+/* ==================== */
+#rouletteTable {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 40px);
+    grid-auto-rows: 40px;
+    gap: 2px;
+}
+
+.bet-spot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 700;
+    color: white;
+    user-select: none;
+    border: 1px solid #ccc;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.bet-spot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* Zero column */
+.zero-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 8px;
+}
+
+/* Outside bets */
+.outside-bets {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.outside-bets .bet-spot {
+    width: 60px;
+    height: 40px;
+    font-size: 14px;
+    background-color: #333;
+    color: #fff;
+}
+
+/* Red/Black colors for numbers */
+.bet-spot[data-number] {
+    background-color: #14b8a6;
+}
+
+.bet-spot[data-number][style*="red"] {
+    background-color: #dc2626;
+}
+
+/* ==================== */
+/*      RESPONSIVE      */
+/* ==================== */
+@media (max-width: 600px) {
+    .numbers-grid {
+        grid-template-columns: repeat(12, 30px);
+        grid-auto-rows: 30px;
+    }
+    .bet-spot {
+        font-size: 12px;
+    }
+    #rouletteWheel {
+        width: 220px;
+        height: 220px;
+    }
+}
