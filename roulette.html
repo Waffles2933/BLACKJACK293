@@ -1,39 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>American Roulette</title>
-  <link rel="stylesheet" href="roulette.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>American Roulette</title>
+<link rel="stylesheet" href="roulette.css">
 </head>
 <body>
-  <h1>American Roulette</h1>
+  <h1>Ultimate American Roulette</h1>
 
-  <!-- Wheel -->
-  <div id="rouletteWheel">
-    <div id="wheel"></div>
-    <div id="ball"></div>
+  <!-- Player Info -->
+  <div class="player-info">
+    Chips: <span id="playerChips">1000</span>
+    Current Bet: <span id="currentBet">0</span>
   </div>
 
-  <!-- Betting Table -->
-  <div id="bettingTable"></div>
+  <div class="game-container">
+    <!-- Roulette Wheel -->
+    <div id="rouletteWheelContainer">
+      <canvas id="rouletteWheel" width="400" height="400"></canvas>
+      <button id="spinBtn">Spin</button>
+    </div>
 
-  <!-- Chip Tray -->
-  <div id="chipTray">
-    <button class="chip" data-value="1" style="background:red;">1</button>
-    <button class="chip" data-value="5" style="background:blue;">5</button>
-    <button class="chip" data-value="25" style="background:green;">25</button>
-    <button class="chip" data-value="100" style="background:black;">100</button>
+    <!-- Betting Table -->
+    <div id="bettingTableContainer">
+      <!-- American Roulette Table -->
+      <div id="rouletteTable">
+        <div class="column zero-column">
+          <div class="bet-spot" data-number="0">0</div>
+          <div class="bet-spot" data-number="00">00</div>
+        </div>
+        <div class="numbers-grid">
+          <!-- 3x12 numbers 1–36 -->
+          <!-- Rows generated via JS or can be hard-coded -->
+        </div>
+        <!-- Outside bets -->
+        <div class="outside-bets">
+          <div class="bet-spot" data-bet="red">Red</div>
+          <div class="bet-spot" data-bet="black">Black</div>
+          <div class="bet-spot" data-bet="even">Even</div>
+          <div class="bet-spot" data-bet="odd">Odd</div>
+          <div class="bet-spot" data-bet="1to18">1-18</div>
+          <div class="bet-spot" data-bet="19to36">19-36</div>
+          <div class="bet-spot" data-bet="first12">1st 12</div>
+          <div class="bet-spot" data-bet="second12">2nd 12</div>
+          <div class="bet-spot" data-bet="third12">3rd 12</div>
+          <div class="bet-spot" data-bet="col1">Column 1</div>
+          <div class="bet-spot" data-bet="col2">Column 2</div>
+          <div class="bet-spot" data-bet="col3">Column 3</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Controls -->
-  <div id="controls">
-    <button id="spinBtn">Spin</button>
-    <button id="clearBtn">Clear Bets</button>
-  </div>
+  <!-- Notification / Result -->
+  <div id="notification"></div>
 
-  <div id="status"></div>
-
+  <!-- Scripts -->
   <script src="roulette.js"></script>
 </body>
 </html>
