@@ -8,35 +8,40 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
     padding: 20px;
-    transition: background 0.3s, color 0.3s;
-}
-
-body.light {
-    background: #f0f0f0;
-    color: #000;
+    position: relative;
 }
 
 h1 {
+    margin-bottom: 20px;
     text-align: center;
-    margin-bottom: 20px;
 }
 
 /* ==================== */
-/*      CONTROLS        */
+/*      CHIP & BET INFO */
 /* ==================== */
-.controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+#playerChips, #currentBet {
+    font-weight: 700;
+    font-size: 18px;
+    margin: 5px;
 }
 
+#notification {
+    margin-top: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #facc15;
+}
+
+/* ==================== */
+/*       BUTTONS        */
+/* ==================== */
 button {
-    padding: 6px 12px;
+    padding: 8px 14px;
+    margin: 4px;
     border-radius: 6px;
     border: none;
-    background: #0ea5a6;
+    background-color: #0ea5a6;
     color: #042027;
     font-weight: 700;
     cursor: pointer;
@@ -44,7 +49,7 @@ button {
 }
 
 button:hover:not(:disabled) {
-    background: #14b8a6;
+    background-color: #14b8a6;
 }
 
 button:disabled {
@@ -53,185 +58,95 @@ button:disabled {
 }
 
 /* ==================== */
-/*    TABLE CONTAINER   */
+/*      ROULETTE WHEEL  */
 /* ==================== */
-#rouletteContainer {
+#rouletteWheel {
+    border: 4px solid #fff;
+    border-radius: 50%;
+    margin: 20px 0;
+    background: #071026;
+}
+
+/* ==================== */
+/*      BETTING TABLE    */
+/* ==================== */
+#rouletteTable {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
 }
 
-/* ==================== */
-/*       ROULETTE WHEEL */
-/* ==================== */
-#wheel {
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    border: 8px solid #333;
-    background: radial-gradient(circle at center, #1f2937 0%, #111827 70%);
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.7);
-}
-
-#wheel .number {
-    position: absolute;
-    font-size: 14px;
-    font-weight: bold;
-    color: #fff;
-    transform-origin: center center;
-}
-
-/* Add pointer */
-#wheelPointer {
-    width: 0;
-    height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-bottom: 20px solid red;
-    position: absolute;
-    top: -20px;
-}
-
-/* ==================== */
-/*    NUMBERS GRID      */
-/* ==================== */
 .numbers-grid {
     display: grid;
     grid-template-columns: repeat(12, 40px);
-    grid-gap: 2px;
-    margin-bottom: 20px;
+    grid-auto-rows: 40px;
+    gap: 2px;
 }
 
-.numbers-grid .bet-spot {
-    width: 40px;
-    height: 40px;
+.bet-spot {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: bold;
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #333;
-    color: #fff;
-    transition: transform 0.1s, background 0.2s;
-}
-
-.numbers-grid .bet-spot:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 5px #fff;
-}
-
-/* Colors */
-.numbers-grid .bet-spot.red {
-    background-color: #dc2626;
-}
-
-.numbers-grid .bet-spot.black {
-    background-color: #111827;
-}
-
-.numbers-grid .bet-spot.green {
-    background-color: #16a34a;
-}
-
-/* ==================== */
-/*    CHIPS DISPLAY     */
-/* ==================== */
-#chipsContainer {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.chip {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #facc15 0%, #b45309 70%);
-    border: 2px solid #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    color: #000;
-    cursor: pointer;
-    transition: transform 0.1s;
-}
-
-.chip:hover {
-    transform: scale(1.2);
-}
-
-/* ==================== */
-/*     STATUS BAR       */
-/* ==================== */
-#status {
     font-weight: 700;
-    font-size: 18px;
-    text-align: center;
-    margin-bottom: 20px;
+    color: white;
+    user-select: none;
+    border: 1px solid #ccc;
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 
-/* ==================== */
-/*    NOTIFICATION      */
-/* ==================== */
-#notification {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px 30px;
-    font-size: 28px;
-    font-weight: 900;
-    color: #f00;
-    background: rgba(255,255,255,0.1);
-    border-radius: 12px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.5s;
+.bet-spot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
-/* ==================== */
-/*      MODAL           */
-/* ==================== */
-#keyModal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: #0f1724;
-    padding: 20px;
-    border-radius: 10px;
+/* Zero column */
+.zero-column {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
+    margin-right: 8px;
 }
 
-.modal-content input {
+/* Outside bets */
+.outside-bets {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.outside-bets .bet-spot {
     width: 60px;
-    padding: 4px;
-    border-radius: 4px;
-    border: none;
-    font-weight: 700;
+    height: 40px;
+    font-size: 14px;
+    background-color: #333;
+    color: #fff;
+}
+
+/* Red/Black colors for numbers */
+.bet-spot[data-number] {
+    background-color: #14b8a6;
+}
+
+.bet-spot[data-number][style*="red"] {
+    background-color: #dc2626;
 }
 
 /* ==================== */
 /*      RESPONSIVE      */
 /* ==================== */
-@media (max-width: 768px) {
-    .numbers-grid { grid-template-columns: repeat(6, 40px); }
-    #wheel { width: 250px; height: 250px; }
-    .chip { width: 25px; height: 25px; font-size: 12px; }
+@media (max-width: 600px) {
+    .numbers-grid {
+        grid-template-columns: repeat(12, 30px);
+        grid-auto-rows: 30px;
+    }
+    .bet-spot {
+        font-size: 12px;
+    }
+    #rouletteWheel {
+        width: 220px;
+        height: 220px;
+    }
 }
