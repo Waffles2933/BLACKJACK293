@@ -133,6 +133,7 @@ button:disabled {
 
 .numbers-grid .bet-spot.black {
     background-color: #111827;
+    color: #fff; /* ensures numbers are visible */
 }
 
 .numbers-grid .bet-spot.green {
