@@ -3,39 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Roulette Game</title>
+  <title>American Roulette</title>
   <link rel="stylesheet" href="roulette.css">
 </head>
 <body>
-  <h1>Roulette</h1>
+  <h1>American Roulette</h1>
 
-  <div class="game-container">
-    <!-- Wheel -->
-    <div class="wheel-container">
-      <div id="wheel"></div>
-      <button id="spinBtn">Spin Wheel</button>
-    </div>
+  <!-- Wheel -->
+  <div id="rouletteWheel">
+    <div id="wheel"></div>
+    <div id="ball"></div>
+  </div>
 
-    <!-- Betting Board -->
-    <div class="board">
-      <h2>Betting Board</h2>
-      <div id="bettingBoard" class="grid"></div>
+  <!-- Betting Table -->
+  <div id="bettingTable">
+    <div class="bet-row" id="numbers"></div>
+    <div class="bet-row">
+      <div class="bet-spot special" data-bet="red">Red</div>
+      <div class="bet-spot special" data-bet="black">Black</div>
+      <div class="bet-spot special" data-bet="even">Even</div>
+      <div class="bet-spot special" data-bet="odd">Odd</div>
+      <div class="bet-spot special" data-bet="low">1–18</div>
+      <div class="bet-spot special" data-bet="high">19–36</div>
     </div>
   </div>
 
-  <!-- Chips / Player Info -->
-  <div class="chips-panel">
-    <p>Chips: <span id="chips">1000</span></p>
-    <div class="chip-buttons">
-      <button class="chip" data-value="10">10</button>
-      <button class="chip" data-value="50">50</button>
-      <button class="chip" data-value="100">100</button>
-    </div>
+  <!-- Chip Tray -->
+  <div id="chipTray">
+    <button class="chip" data-value="1">1</button>
+    <button class="chip" data-value="5">5</button>
+    <button class="chip" data-value="25">25</button>
+    <button class="chip" data-value="100">100</button>
   </div>
 
-  <div id="status">Place your bets and spin the wheel!</div>
+  <!-- Controls -->
+  <div id="controls">
+    <button id="spinBtn">Spin</button>
+    <button id="clearBtn">Clear Bets</button>
+  </div>
+
+  <div id="status">Place your bets!</div>
 
   <script src="roulette.js"></script>
 </body>
 </html>
-
