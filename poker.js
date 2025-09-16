@@ -1,4 +1,4 @@
-// === PART 3: TEXAS HOLD'EM GAMEPLAY JS ===
+// === TEXAS HOLD'EM GAMEPLAY ===
 
 // Deck & cards
 const SUITS = ['♠','♥','♦','♣'];
@@ -10,19 +10,21 @@ const RANKS = [
 let deck = [];
 let communityCards = [];
 let playerHand = [];
-let aiHands = [[],[],[],[]]; // 4 AI players
+let aiHands = [
+  { cards: [], folded: false },
+  { cards: [], folded: false },
+  { cards: [], folded: false },
+  { cards: [], folded: false }
+]; 
 let chips = 1000;
 let currentBet = 10;
 
 // DOM Elements
-const tableEl = document.getElementById('table');
-const playerHandEl = document.getElementById('playerHand');
 const communityEl = document.getElementById('communityCards');
+const playerAreaEl = document.getElementById('playerArea');
 const aiPlayersEl = document.getElementById('aiPlayers');
 const betInput = document.getElementById('betInput');
-const chipsEl = document.getElementById('chips');
 const statusEl = document.getElementById('status');
-const statsEl = document.getElementById('stats');
 
 // === UTILITY FUNCTIONS ===
 function buildDeck() {
@@ -43,10 +45,10 @@ function shuffle(array){
   return array;
 }
 
-function dealCard(hand){
+function dealCard(handArr){
   if(deck.length===0) deck = buildDeck();
   const card = deck.pop();
-  hand.push(card);
+  handArr.push(card);
   return card;
 }
 
@@ -64,8 +66,14 @@ function renderCard(card, hidden=false){
 
 // === UI RENDERING ===
 function renderPlayerHand() {
-  playerHandEl.innerHTML = '';
-  playerHand.forEach(c => playerHandEl.appendChild(renderCard(c)));
+  playerAreaEl.innerHTML = '<h3>You</h3>';
+  const cardsDiv = document.createElement('div');
+  cardsDiv.className = 'cards';
+  playerHand.forEach(c => cardsDiv.appendChild(renderCard(c)));
+  playerAreaEl.appendChild(cardsDiv);
+  const chipDiv = document.createElement('div');
+  chipDiv.textContent = `Chips: ${chips}`;
+  playerAreaEl.appendChild(chipDiv);
 }
 
 function renderCommunity() {
@@ -73,26 +81,24 @@ function renderCommunity() {
   communityCards.forEach(c => communityEl.appendChild(renderCard(c)));
 }
 
-function renderAIHands() {
+function renderAIHands(show=false) {
   aiPlayersEl.innerHTML = '';
-  aiHands.forEach((hand,index)=>{
+  aiHands.forEach((handObj,index)=>{
     const div = document.createElement('div');
-    div.className = 'aiPlayer hiddenCards';
-    div.innerHTML = `<strong>AI ${index+1}</strong>`;
+    div.className = 'aiPlayer';
+    div.innerHTML = `<strong>AI ${index+1} ${handObj.folded ? '(Folded)' : ''}</strong>`;
     const cardsDiv = document.createElement('div');
     cardsDiv.className = 'cards';
-    hand.forEach(c=>cardsDiv.appendChild(renderCard(c,true))); // hidden
+    handObj.cards.forEach(c=>{
+      cardsDiv.appendChild(renderCard(c, !show)); 
+    });
     div.appendChild(cardsDiv);
     const chipDiv = document.createElement('div');
     chipDiv.className = 'aiChips';
-    chipDiv.textContent = 'Chips: 1000';
+    chipDiv.textContent = 'Chips: 1000'; // placeholder
     div.appendChild(chipDiv);
     aiPlayersEl.appendChild(div);
   });
-}
-
-function updateChips() {
-  chipsEl.textContent = chips;
 }
 
 function showStatus(msg) {
@@ -104,16 +110,21 @@ function startRound() {
   deck = buildDeck();
   communityCards = [];
   playerHand = [];
-  aiHands = [[],[],[],[]];
+  aiHands = [
+    { cards: [], folded: false },
+    { cards: [], folded: false },
+    { cards: [], folded: false },
+    { cards: [], folded: false }
+  ];
 
   // Deal player & AI
   dealCard(playerHand); dealCard(playerHand);
-  aiHands.forEach(h=>{ dealCard(h); dealCard(h); });
+  aiHands.forEach(h=>{ dealCard(h.cards); dealCard(h.cards); });
 
   renderPlayerHand();
-  renderAIHands();
+  renderAIHands(false);
   renderCommunity();
-  showStatus('Place your bet and play!');
+  showStatus('New round started! Place your bet.');
 }
 
 function dealFlop() {
@@ -133,236 +144,68 @@ function dealRiver() {
   renderCommunity();
 }
 
-// === INITIALIZATION ===
-document.addEventListener('DOMContentLoaded', ()=>{
-  updateChips();
-  startRound();
-
-  // Example buttons: you would create buttons in your index.html
-  document.getElementById('dealFlopBtn')?.addEventListener('click',dealFlop);
-  document.getElementById('dealTurnBtn')?.addEventListener('click',dealTurn);
-  document.getElementById('dealRiverBtn')?.addEventListener('click',dealRiver);
-});
-
-// === PART 3B: HAND EVALUATION & WINNER LOGIC ===
-
-// Utility: convert hand + community to sorted values
-function getCardValues(hand) {
-  return hand.map(c => c.value).sort((a,b)=>b-a);
-}
-
-// Simplified: highest card wins (placeholder for full hand ranking)
-function evaluateHand(hand) {
-  const allCards = hand.concat(communityCards);
+// === HAND EVALUATION (simplified, placeholder) ===
+function evaluateHand(handObj) {
+  if(handObj.folded) return {score: 0, high: 0};
+  const allCards = handObj.cards.concat(communityCards);
   const values = allCards.map(c=>c.value).sort((a,b)=>b-a);
-  return values[0]; // placeholder: top card determines winner
+  return {score: values[0], high: values[0]};
 }
 
-// Determine winner between player and AI
 function determineWinner() {
-  const playerScore = evaluateHand(playerHand);
-  const aiScores = aiHands.map(h => evaluateHand(h));
+  const playerScore = evaluateHand({cards: playerHand, folded: false});
+  const aiScores = aiHands.map(h=>evaluateHand(h));
 
-  const highestAI = Math.max(...aiScores);
-
-  if(playerScore > highestAI) {
-    showStatus('You win the round!');
-    chips += currentBet * 2;
-  } else if(playerScore === highestAI) {
-    showStatus('Round is a tie (Push)');
-    chips += currentBet;
-  } else {
-    showStatus('AI wins the round');
-    chips -= currentBet;
-  }
-  updateChips();
-}
-
-// Show AI cards at showdown
-function revealAIHands() {
-  aiPlayersEl.querySelectorAll('.aiPlayer').forEach((div,index)=>{
-    div.querySelectorAll('.card').forEach(c=>c.classList.remove('hidden-card'));
+  let best = playerScore;
+  let winner = 'You';
+  aiScores.forEach((s,i)=>{
+    if(s.score>best.score){
+      best = s;
+      winner = `AI ${i+1}`;
+    }
   });
+
+  showStatus(`${winner} wins the round!`);
+  renderAIHands(true); // reveal
 }
 
-// === Betting / Player Actions ===
+// === BETTING ===
 function playerBet(amount) {
   amount = parseInt(amount);
   if(amount > chips) {
     showStatus('Not enough chips');
-    return false;
+    return;
   }
   currentBet = amount;
   chips -= amount;
-  updateChips();
-  showStatus(`Bet set to ${amount}`);
-  return true;
+  renderPlayerHand();
+  showStatus(`You bet ${amount}`);
 }
 
-// AI Placeholder Logic: simple random fold/call
+// AI simple logic
 function aiDecision() {
-  aiHands.forEach((hand,index)=>{
-    // simple: 80% chance to stay, 20% fold
-    const decision = Math.random();
-    if(decision<0.2){
-      showStatus(`AI ${index+1} folds`);
+  aiHands.forEach((h,i)=>{
+    if(Math.random()<0.2){
+      h.folded = true;
     }
   });
 }
 
-// Full round: Flop -> Turn -> River -> Showdown
-function playRound() {
-  dealFlop();
-  aiDecision();
-  dealTurn();
-  aiDecision();
-  dealRiver();
-  aiDecision();
-  revealAIHands();
-  determineWinner();
-}
-
-// === UI Buttons (add in HTML) ===
+// === BUTTONS ===
 document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('startRoundBtn')?.addEventListener('click',startRound);
-  document.getElementById('playRoundBtn')?.addEventListener('click',playRound);
-  document.getElementById('betInput')?.addEventListener('change',()=>playerBet(betInput.value));
-});
+  document.getElementById('dealBtn').addEventListener('click', startRound);
+  document.getElementById('betBtn').addEventListener('click', ()=>playerBet(betInput.value||10));
+  document.getElementById('checkBtn').addEventListener('click', ()=>{ showStatus("You checked"); });
+  document.getElementById('foldBtn').addEventListener('click', ()=>{ showStatus("You folded"); });
 
-
-// === PART 4: FULL POKER LOGIC ===
-
-// Hand ranking utility
-const HAND_RANKS = {
-  'highCard':1,
-  'pair':2,
-  'twoPair':3,
-  'threeOfAKind':4,
-  'straight':5,
-  'flush':6,
-  'fullHouse':7,
-  'fourOfAKind':8,
-  'straightFlush':9,
-  'royalFlush':10
-};
-
-// Helper functions
-function isFlush(cards){
-  const suits = cards.map(c=>c.suit);
-  return suits.every(s=>s===suits[0]);
-}
-
-function isStraight(values){
-  const sorted = [...new Set(values)].sort((a,b)=>a-b);
-  if(sorted.length<5) return false;
-  for(let i=0;i<=sorted.length-5;i++){
-    let straight=true;
-    for(let j=0;j<4;j++){
-      if(sorted[i+j]+1!==sorted[i+j+1]) straight=false;
-    }
-    if(straight) return true;
-  }
-  return false;
-}
-
-function countValues(cards){
-  const counts={};
-  cards.forEach(c=>counts[c.value]=(counts[c.value]||0)+1);
-  return counts;
-}
-
-// Evaluate a 7-card hand
-function evaluateFullHand(hand){
-  const allCards = hand.concat(communityCards);
-  const values = allCards.map(c=>c.value);
-  const counts = countValues(allCards);
-  const flush = isFlush(allCards);
-  const straight = isStraight(values);
-  
-  const countVals = Object.values(counts);
-  
-  if(flush && straight && values.includes(14)) return {rank: HAND_RANKS.royalFlush, high:14};
-  if(flush && straight) return {rank: HAND_RANKS.straightFlush, high:Math.max(...values)};
-  if(countVals.includes(4)) return {rank: HAND_RANKS.fourOfAKind, high:Math.max(...values)};
-  if(countVals.includes(3) && countVals.includes(2)) return {rank: HAND_RANKS.fullHouse, high:Math.max(...values)};
-  if(flush) return {rank: HAND_RANKS.flush, high:Math.max(...values)};
-  if(straight) return {rank: HAND_RANKS.straight, high:Math.max(...values)};
-  if(countVals.includes(3)) return {rank: HAND_RANKS.threeOfAKind, high:Math.max(...values)};
-  if(countVals.filter(v=>v===2).length===2) return {rank: HAND_RANKS.twoPair, high:Math.max(...values)};
-  if(countVals.includes(2)) return {rank: HAND_RANKS.pair, high:Math.max(...values)};
-  return {rank: HAND_RANKS.highCard, high:Math.max(...values)};
-}
-
-// Determine winner
-function determineWinnerAdvanced(){
-  const playerScore = evaluateFullHand(playerHand);
-  const aiScores = aiHands.map(h=>evaluateFullHand(h));
-  
-  let highestRank = playerScore;
-  let winner = 'Player';
-  
-  aiScores.forEach((score,i)=>{
-    if(score.rank>highestRank.rank || (score.rank===highestRank.rank && score.high>highestRank.high)){
-      highestRank = score;
-      winner = `AI ${i+1}`;
-    }
+  // For testing: full flow
+  document.getElementById('dealFlopBtn')?.addEventListener('click', dealFlop);
+  document.getElementById('dealTurnBtn')?.addEventListener('click', dealTurn);
+  document.getElementById('dealRiverBtn')?.addEventListener('click', ()=>{
+    dealRiver();
+    aiDecision();
+    determineWinner();
   });
-  
-  showStatus(`${winner} wins the round!`);
-  
-  if(winner==='Player'){
-    chips += currentBet * 2;
-  } else {
-    chips -= currentBet;
-  }
-  updateChips();
-}
 
-// AI Decision-Making (simple logic)
-function aiDecisionAdvanced(){
-  aiHands.forEach((hand,index)=>{
-    const score = evaluateFullHand(hand);
-    // Fold if very low hand
-    if(score.rank <= HAND_RANKS.highCard && Math.random()<0.3){
-      showStatus(`AI ${index+1} folds`);
-      hand.folded = true;
-    } else {
-      // Call or raise
-      hand.folded = false;
-    }
-  });
-}
-
-// Multiple Betting Rounds
-function playFullRound(){
-  currentBet = parseInt(document.getElementById('betInput').value) || 10;
-  chips -= currentBet;
-  updateChips();
-  
-  dealPreFlop();
-  aiDecisionAdvanced();
-  
-  dealFlop();
-  aiDecisionAdvanced();
-  
-  dealTurn();
-  aiDecisionAdvanced();
-  
-  dealRiver();
-  aiDecisionAdvanced();
-  
-  revealAIHands();
-  determineWinnerAdvanced();
-}
-
-// Button for full round
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('playFullRoundBtn')?.addEventListener('click', playFullRound);
+  startRound();
 });
-
-function dealFlop() {
-  communityCards.push(dealCard(communityCards));
-  communityCards.push(dealCard(communityCards));
-  communityCards.push(dealCard(communityCards));
-  renderCommunity();
-}
