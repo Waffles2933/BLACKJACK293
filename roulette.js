@@ -1,97 +1,69 @@
-let chips = 1000;
-let currentBet = 0;
-let bets = {}; // store bets by cell number
+let currentChipValue = 1;
+let bets = {};
 let spinning = false;
 
-// DOM refs
-const chipsEl = document.getElementById("chips");
-const statusEl = document.getElementById("status");
-const boardEl = document.getElementById("bettingBoard");
-const wheelEl = document.getElementById("wheel");
+const spinBtn = document.getElementById("spinBtn");
+const clearBtn = document.getElementById("clearBtn");
+const wheel = document.getElementById("wheel");
+const status = document.getElementById("status");
+const numbersContainer = document.getElementById("numbers");
 
-// Build betting board (0-36)
-function buildBoard() {
-  for (let i = 0; i <= 36; i++) {
-    const cell = document.createElement("div");
-    cell.classList.add("cell");
-    cell.textContent = i;
-    if (i === 0) cell.classList.add("green");
-    else if ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(i)) {
-      cell.classList.add("red");
-    } else {
-      cell.classList.add("black");
-    }
-    cell.addEventListener("click", () => placeBet(i));
-    boardEl.appendChild(cell);
-  }
-}
+// Generate number spots (0, 00, 1–36)
+["0", "00"].concat([...Array(36).keys()].map(n => n+1)).forEach(num => {
+  const div = document.createElement("div");
+  div.classList.add("bet-spot");
+  div.dataset.bet = num;
+  div.innerText = num;
+  numbersContainer.appendChild(div);
+});
 
-// Place bet
-function placeBet(num) {
-  if (currentBet > chips) {
-    setStatus("Not enough chips for that bet!");
-    return;
-  }
-  if (!bets[num]) bets[num] = 0;
-  bets[num] += currentBet;
-  chips -= currentBet;
-  updateChips();
-  setStatus(`Bet ${currentBet} on ${num}`);
-}
-
-// Spin wheel
-function spinWheel() {
-  if (spinning) return;
-  spinning = true;
-
-  let deg = Math.floor(Math.random() * 360) + 720; // 2+ spins
-  wheelEl.style.transition = "transform 3s ease-out";
-  wheelEl.style.transform = `rotate(${deg}deg)`;
-
-  setTimeout(() => {
-    let winningNum = Math.floor(Math.random() * 37); // 0-36
-    settleBets(winningNum);
-    spinning = false;
-  }, 3200);
-}
-
-// Settle bets
-function settleBets(winningNum) {
-  let payout = 0;
-  for (let num in bets) {
-    if (parseInt(num) === winningNum) {
-      payout += bets[num] * 35; // straight-up win
-    }
-  }
-  if (payout > 0) {
-    chips += payout;
-    setStatus(`Ball landed on ${winningNum}! You won ${payout}!`);
-  } else {
-    setStatus(`Ball landed on ${winningNum}. You lost your bets.`);
-  }
-  bets = {}; // reset
-  updateChips();
-}
-
-// Helpers
-function updateChips() {
-  chipsEl.textContent = chips;
-}
-function setStatus(msg) {
-  statusEl.textContent = msg;
-}
-
-// Chip selector
-document.querySelectorAll(".chip").forEach(btn => {
-  btn.addEventListener("click", () => {
-    currentBet = parseInt(btn.dataset.value);
-    setStatus(`Selected chip value: ${currentBet}`);
+// Chip selection
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    currentChipValue = parseInt(chip.dataset.value);
   });
 });
 
-// Spin button
-document.getElementById("spinBtn").addEventListener("click", spinWheel);
+// Place bets
+document.querySelectorAll(".bet-spot").forEach(spot => {
+  spot.addEventListener("click", () => {
+    const bet = spot.dataset.bet;
+    if (!bets[bet]) bets[bet] = 0;
+    bets[bet] += currentChipValue;
 
-// Init
-buildBoard();
-updateChips();
+    // Show chip on board
+    let chipDiv = spot.querySelector(".chipOnBoard");
+    if (!chipDiv) {
+      chipDiv = document.createElement("div");
+      chipDiv.classList.add("chipOnBoard");
+      spot.appendChild(chipDiv);
+    }
+    chipDiv.innerText = bets[bet];
+  });
+});
+
+// Clear bets
+clearBtn.addEventListener("click", () => {
+  bets = {};
+  document.querySelectorAll(".chipOnBoard").forEach(c => c.remove());
+  status.innerText = "Bets cleared!";
+});
+
+// Spin wheel
+spinBtn.addEventListener("click", () => {
+  if (spinning) return;
+  spinning = true;
+
+  const spinDeg = 720 + Math.floor(Math.random() * 360);
+  wheel.style.transform = `rotate(${spinDeg}deg)`;
+
+  setTimeout(() => {
+    const result = Math.floor(Math.random() * 38); // 0–37
+    const number = result === 37 ? "00" : result.toString();
+    status.innerText = `Ball landed on ${number}!`;
+
+    // TODO: payout logic here
+
+    spinning = false;
+  }, 4000);
+});
