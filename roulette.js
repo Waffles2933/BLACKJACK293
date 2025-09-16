@@ -1,149 +1,168 @@
-// === Roulette Game JS ===
+// === ROULETTE JS ===
 
-// DOM Elements
-const wheelEl = document.getElementById('wheel');
-const tableEl = document.getElementById('bettingTable');
-const chipContainer = document.getElementById('chip-container');
-const playerChipsEl = document.getElementById('chips');
-const spinBtn = document.getElementById('spinBtn');
-const clearBetsBtn = document.getElementById('clearBetsBtn');
-const statusEl = document.getElementById('status');
-const notificationEl = document.getElementById('notification');
-
+// Player info
 let playerChips = 1000;
-let selectedChip = 10;
-let bets = {}; // key = number, value = amount
+let currentBet = 0;
+let bets = []; // {type:'number/red/etc', value:amount}
 
-// === Setup Betting Table ===
-function createTable() {
-    tableEl.innerHTML = '';
-    for (let i = 0; i <= 36; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'number-cell';
-        cell.dataset.number = i;
+// Roulette numbers for American wheel
+const wheelNumbers = [
+  '0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1',
+  '00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'
+];
 
-        if (i === 0) {
-            cell.classList.add('green');
-        } else if ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(i)) {
-            cell.classList.add('red');
-        } else {
-            cell.classList.add('black');
-        }
+const numberColors = {
+  '0':'green','00':'green',
+  '1':'red','2':'black','3':'red','4':'black','5':'red','6':'black','7':'red','8':'black',
+  '9':'red','10':'black','11':'black','12':'red','13':'black','14':'red','15':'black','16':'red',
+  '17':'black','18':'red','19':'red','20':'black','21':'red','22':'black','23':'red','24':'black',
+  '25':'red','26':'black','27':'red','28':'black','29':'black','30':'red','31':'black','32':'red',
+  '33':'black','34':'red','35':'black','36':'red'
+};
 
-        cell.textContent = i;
-        cell.addEventListener('click', () => placeBet(i));
-        tableEl.appendChild(cell);
-    }
+// DOM elements
+const chipsEl = document.getElementById('playerChips');
+const currentBetEl = document.getElementById('currentBet');
+const notificationEl = document.getElementById('notification');
+const spinBtn = document.getElementById('spinBtn');
+const rouletteWheel = document.getElementById('rouletteWheel');
+const tableContainer = document.getElementById('rouletteTable');
+
+// Canvas context for wheel
+const ctx = rouletteWheel.getContext('2d');
+const wheelRadius = rouletteWheel.width/2;
+
+// Initialize table numbers
+function initTable() {
+  const grid = tableContainer.querySelector('.numbers-grid');
+  grid.innerHTML = '';
+  for(let i=1;i<=36;i++){
+    const div = document.createElement('div');
+    div.className = 'bet-spot';
+    div.dataset.number = i;
+    div.textContent = i;
+    div.style.backgroundColor = numberColors[i];
+    div.style.color = (numberColors[i]==='red')?'white':'black';
+    div.addEventListener('click',()=>placeBet(i));
+    grid.appendChild(div);
+  }
+
+  // Add outside bets
+  tableContainer.querySelectorAll('.outside-bets .bet-spot').forEach(btn=>{
+    btn.addEventListener('click',()=>placeBet(btn.dataset.bet));
+  });
+
+  // Add 0 and 00 bets
+  tableContainer.querySelectorAll('.zero-column .bet-spot').forEach(btn=>{
+    btn.addEventListener('click',()=>placeBet(btn.dataset.number));
+  });
 }
 
-// === Chip Selection ===
-chipContainer.querySelectorAll('.chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-        selectedChip = parseInt(chip.dataset.value);
-        showStatus(`Selected chip: ${selectedChip}`);
-    });
-});
-
-// === Place Bet ===
-function placeBet(number) {
-    if (playerChips < selectedChip) {
-        showStatus('Not enough chips!');
-        return;
-    }
-
-    bets[number] = (bets[number] || 0) + selectedChip;
-    playerChips -= selectedChip;
-    updateChips();
-    highlightBet(number);
-}
-
-// Highlight placed bet
-function highlightBet(number) {
-    const cell = tableEl.querySelector(`[data-number='${number}']`);
-    if(cell) cell.classList.add('bet-placed');
+// === BETTING ===
+function placeBet(type){
+  if(playerChips<=0) return alert("No chips left!");
+  const amount = 10; // fixed chip for simplicity
+  bets.push({type:type,value:amount});
+  currentBet += amount;
+  playerChips -= amount;
+  updateDisplay();
 }
 
 // Update chip display
-function updateChips() {
-    playerChipsEl.textContent = playerChips;
+function updateDisplay(){
+  chipsEl.textContent = playerChips;
+  currentBetEl.textContent = currentBet;
 }
 
-// === Clear Bets ===
-clearBetsBtn.addEventListener('click', () => {
-    for (const number in bets) {
-        const cell = tableEl.querySelector(`[data-number='${number}']`);
-        if (cell) cell.classList.remove('bet-placed');
-    }
-    // Refund chips
-    for (const number in bets) {
-        playerChips += bets[number];
-    }
-    bets = {};
-    updateChips();
-    showStatus('Bets cleared.');
-});
-
-// === Spin Wheel ===
-function spinWheel() {
-    if (Object.keys(bets).length === 0) {
-        showStatus('Place at least one bet!');
-        return;
-    }
-
-    const winningNumber = Math.floor(Math.random() * 37); // 0-36
-    showNotification(`Winning number: ${winningNumber}`);
-
-    // Payouts: 35:1 for single number
-    if (bets[winningNumber]) {
-        const winnings = bets[winningNumber] * 36; // payout = 35 + original bet
-        playerChips += winnings;
-        showStatus(`You won ${winnings} chips on ${winningNumber}!`);
-    } else {
-        showStatus(`You lost this round. Winning number: ${winningNumber}`);
-    }
-
-    // Reset bets
-    for (const number in bets) {
-        const cell = tableEl.querySelector(`[data-number='${number}']`);
-        if (cell) cell.classList.remove('bet-placed');
-    }
-    bets = {};
-    updateChips();
+// === WHEEL SPIN ===
+function spinWheel(){
+  if(bets.length===0) return alert("Place a bet first!");
+  
+  const spinIndex = Math.floor(Math.random()*wheelNumbers.length);
+  const result = wheelNumbers[spinIndex];
+  
+  animateWheel(spinIndex, ()=>{
+    checkBets(result);
+    bets=[];
+    currentBet=0;
+    updateDisplay();
+  });
 }
 
-// Notification
-function showNotification(msg) {
-    notificationEl.textContent = msg;
-    notificationEl.style.opacity = 1;
-    setTimeout(() => {
-        notificationEl.style.opacity = 0;
-    }, 3000);
+// Animate wheel spin
+function animateWheel(targetIndex, callback){
+  let start = null;
+  let totalSpins = 5*wheelNumbers.length + targetIndex; // total positions to move
+  function step(timestamp){
+    if(!start) start=timestamp;
+    const progress = (timestamp-start)/2000; // spin duration ~2s
+    let angleIndex = Math.floor(progress*totalSpins)%wheelNumbers.length;
+    drawWheel(angleIndex);
+    if(progress<1){
+      requestAnimationFrame(step);
+    }else{
+      drawWheel(targetIndex);
+      callback();
+    }
+  }
+  requestAnimationFrame(step);
 }
 
-// Status
-function showStatus(msg) {
-    statusEl.textContent = msg;
+// Draw wheel
+function drawWheel(highlightIndex=0){
+  ctx.clearRect(0,0,rouletteWheel.width,rouletteWheel.height);
+  const center = wheelRadius;
+  const anglePerNumber = (2*Math.PI)/wheelNumbers.length;
+  for(let i=0;i<wheelNumbers.length;i++){
+    const startAngle = i*anglePerNumber - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,wheelRadius,startAngle,startAngle+anglePerNumber);
+    ctx.closePath();
+    ctx.fillStyle = (i===highlightIndex)?'yellow':numberColors[wheelNumbers[i]];
+    ctx.fill();
+    // Draw number
+    ctx.save();
+    ctx.translate(center,center);
+    ctx.rotate(startAngle + anglePerNumber/2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = (numberColors[wheelNumbers[i]]==='red')?'white':'black';
+    ctx.font = "16px Arial";
+    ctx.fillText(wheelNumbers[i], wheelRadius-10,5);
+    ctx.restore();
+  }
 }
 
-// === Wheel Visual ===
-function animateWheel() {
-    const degrees = Math.floor(Math.random() * 360) + 720; // spin at least 2 turns
-    wheelEl.style.transition = 'transform 3s ease-out';
-    wheelEl.style.transform = `rotate(${degrees}deg)`;
-    setTimeout(() => {
-        wheelEl.style.transition = '';
-        wheelEl.style.transform = 'rotate(0deg)';
-    }, 3100);
+// === CHECK WINNER ===
+function checkBets(result){
+  let totalWin = 0;
+  bets.forEach(b=>{
+    if(b.type == result) totalWin += b.value*35; // straight win
+    else if(b.type==='red' && numberColors[result]==='red') totalWin += b.value*2;
+    else if(b.type==='black' && numberColors[result]==='black') totalWin += b.value*2;
+    else if(b.type==='even' && result!=='0' && result!=='00' && result%2===0) totalWin += b.value*2;
+    else if(b.type==='odd' && result!=='0' && result!=='00' && result%2===1) totalWin += b.value*2;
+    else if(b.type==='1to18' && result>=1 && result<=18) totalWin += b.value*2;
+    else if(b.type==='19to36' && result>=19 && result<=36) totalWin += b.value*2;
+    else if(b.type==='first12' && result>=1 && result<=12) totalWin += b.value*3;
+    else if(b.type==='second12' && result>=13 && result<=24) totalWin += b.value*3;
+    else if(b.type==='third12' && result>=25 && result<=36) totalWin += b.value*3;
+    else if(b.type==='col1' && [1,4,7,10,13,16,19,22,25,28,31,34].includes(result)) totalWin += b.value*3;
+    else if(b.type==='col2' && [2,5,8,11,14,17,20,23,26,29,32,35].includes(result)) totalWin += b.value*3;
+    else if(b.type==='col3' && [3,6,9,12,15,18,21,24,27,30,33,36].includes(result)) totalWin += b.value*3;
+  });
+  if(totalWin>0){
+    notificationEl.textContent = `Result: ${result}. You won ${totalWin} chips!`;
+  }else{
+    notificationEl.textContent = `Result: ${result}. You lost your bet.`;
+  }
+  playerChips += totalWin;
 }
-
-// === Button Events ===
-spinBtn.addEventListener('click', () => {
-    spinWheel();
-    animateWheel();
-});
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    createTable();
-    updateChips();
+document.addEventListener('DOMContentLoaded', ()=>{
+  initTable();
+  updateDisplay();
+  spinBtn.addEventListener('click',spinWheel);
+  drawWheel();
 });
