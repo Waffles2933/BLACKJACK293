@@ -1,53 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Hub</title>
-<style>
-  body {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: #0b1220;
-    color: #e6eef8;
-    gap: 20px;
-  }
-  button {
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 8px;
-    border: none;
-    background: #0ea5a6;
-    color: #042027;
-    cursor: pointer;
-  }
-  button:hover {
-    background: #089ca0;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate Game Hub</title>
+  <link rel="stylesheet" href="hub.css">
 </head>
 <body>
-  body {
-    position: relative; /* add this line */
-    font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-    background:#0b1220;
-    color:#e6eef8;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:20px;
-    transition: background 0.3s, color 0.3s;
-}
 
-  <h1>Game Hub</h1>
+<h1>🎮 Ultimate Game Hub</h1>
 
-  <button onclick="window.location.href='blackjack.html'">Play Blackjack</button>
-  <button onclick="window.location.href='poker.html'">Play Poker</button>
-  <button onclick="window.location.href='roulette.html'">Play Roulette</button>
+<div id="gameButtons">
+  <button onclick="window.location.href='blackjack.html'">Blackjack</button>
+  <button onclick="window.location.href='poker.html'">Poker</button>
+  <button onclick="window.location.href='roulette.html'">Roulette</button>
+</div>
+
+<div id="hubStatus">
+  <p>Choose a game to start playing. Your chips and settings will carry over per game.</p>
+</div>
 
 </body>
 </html>
