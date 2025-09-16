@@ -1,137 +1,98 @@
 body {
   font-family: Arial, sans-serif;
-  text-align: center;
-  background: #0b5139;
+  background: #0a0a0a;
   color: white;
-}
-
-h1 {
-  margin-top: 10px;
-}
-
-.game-container {
-  display: flex;
-  justify-content: space-around;
-  margin: 20px;
-}
-
-.wheel-container {
   text-align: center;
+}
+
+#rouletteWheel {
+  position: relative;
+  margin: 20px auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 8px solid gold;
+  overflow: hidden;
 }
 
 #wheel {
-  width: 250px;
-  height: 250px;
-  border: 10px solid gold;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   background: conic-gradient(
-    red 0deg 10deg,
-    black 10deg 20deg,
-    red 20deg 30deg,
-    black 30deg 40deg,
-    red 40deg 50deg,
-    black 50deg 60deg,
-    red 60deg 70deg,
-    black 70deg 80deg,
-    red 80deg 90deg,
-    black 90deg 100deg,
-    red 100deg 110deg,
-    black 110deg 120deg,
-    red 120deg 130deg,
-    black 130deg 140deg,
-    red 140deg 150deg,
-    black 150deg 160deg,
-    red 160deg 170deg,
-    black 170deg 180deg,
-    red 180deg 190deg,
-    black 190deg 200deg,
-    red 200deg 210deg,
-    black 210deg 220deg,
-    red 220deg 230deg,
-    black 230deg 240deg,
-    red 240deg 250deg,
-    black 250deg 260deg,
-    red 260deg 270deg,
-    black 270deg 280deg,
-    red 280deg 290deg,
-    black 290deg 300deg,
-    red 300deg 310deg,
-    black 310deg 320deg,
-    red 320deg 330deg,
-    black 330deg 340deg,
-    red 340deg 350deg,
-    green 350deg 360deg
+    green 0deg 9.5deg,
+    red 9.5deg 19deg,
+    black 19deg 28.5deg,
+    red 28.5deg 38deg,
+    black 38deg 47.5deg,
+    /* ... repeat alternating ... */
+    green 342deg 360deg
   );
+  transition: transform 4s ease-out;
+}
+
+#ball {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#bettingTable {
   margin: 20px auto;
+  display: inline-block;
+}
+
+.bet-row {
+  display: flex;
+  justify-content: center;
+  margin: 5px;
+}
+
+.bet-spot {
+  width: 50px;
+  height: 50px;
+  border: 1px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   position: relative;
 }
 
-#wheel::after {
-  content: "";
+.bet-spot.special {
+  width: 80px;
+  background: darkgreen;
+}
+
+.bet-spot .chipOnBoard {
   position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-bottom: 20px solid yellow;
+  bottom: 5px;
+  font-size: 14px;
+  background: crimson;
+  border-radius: 50%;
+  padding: 4px 6px;
 }
 
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.board {
-  text-align: center;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(12, 40px);
-  gap: 5px;
-  justify-content: center;
-}
-
-.cell {
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.cell.red {
-  background: red;
-}
-
-.cell.black {
-  background: black;
-  color: white;
-}
-
-.cell.green {
-  background: green;
-}
-
-.chips-panel {
-  margin-top: 20px;
+#chipTray {
+  margin: 20px;
 }
 
 .chip {
-  background: gold;
+  border: 2px solid white;
   border-radius: 50%;
-  padding: 10px 20px;
-  font-weight: bold;
+  padding: 10px;
+  margin: 5px;
   cursor: pointer;
+  background: crimson;
+  color: white;
+  font-weight: bold;
 }
 
-#status {
-  margin-top: 20px;
-  font-size: 18px;
+#controls {
+  margin: 20px;
 }
