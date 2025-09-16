@@ -1,1 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roulette Game</title>
+  <link rel="stylesheet" href="roulette.css">
+</head>
+<body>
+  <h1>Roulette</h1>
+
+  <div class="game-container">
+    <!-- Wheel -->
+    <div class="wheel-container">
+      <div id="wheel"></div>
+      <button id="spinBtn">Spin Wheel</button>
+    </div>
+
+    <!-- Betting Board -->
+    <div class="board">
+      <h2>Betting Board</h2>
+      <div id="bettingBoard" class="grid"></div>
+    </div>
+  </div>
+
+  <!-- Chips / Player Info -->
+  <div class="chips-panel">
+    <p>Chips: <span id="chips">1000</span></p>
+    <div class="chip-buttons">
+      <button class="chip" data-value="10">10</button>
+      <button class="chip" data-value="50">50</button>
+      <button class="chip" data-value="100">100</button>
+    </div>
+  </div>
+
+  <div id="status">Place your bets and spin the wheel!</div>
+
+  <script src="roulette.js"></script>
+</body>
+</html>
 
