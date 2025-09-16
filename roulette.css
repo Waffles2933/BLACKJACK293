@@ -1,0 +1,137 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #0b5139;
+  color: white;
+}
+
+h1 {
+  margin-top: 10px;
+}
+
+.game-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px;
+}
+
+.wheel-container {
+  text-align: center;
+}
+
+#wheel {
+  width: 250px;
+  height: 250px;
+  border: 10px solid gold;
+  border-radius: 50%;
+  background: conic-gradient(
+    red 0deg 10deg,
+    black 10deg 20deg,
+    red 20deg 30deg,
+    black 30deg 40deg,
+    red 40deg 50deg,
+    black 50deg 60deg,
+    red 60deg 70deg,
+    black 70deg 80deg,
+    red 80deg 90deg,
+    black 90deg 100deg,
+    red 100deg 110deg,
+    black 110deg 120deg,
+    red 120deg 130deg,
+    black 130deg 140deg,
+    red 140deg 150deg,
+    black 150deg 160deg,
+    red 160deg 170deg,
+    black 170deg 180deg,
+    red 180deg 190deg,
+    black 190deg 200deg,
+    red 200deg 210deg,
+    black 210deg 220deg,
+    red 220deg 230deg,
+    black 230deg 240deg,
+    red 240deg 250deg,
+    black 250deg 260deg,
+    red 260deg 270deg,
+    black 270deg 280deg,
+    red 280deg 290deg,
+    black 290deg 300deg,
+    red 300deg 310deg,
+    black 310deg 320deg,
+    red 320deg 330deg,
+    black 330deg 340deg,
+    red 340deg 350deg,
+    green 350deg 360deg
+  );
+  margin: 20px auto;
+  position: relative;
+}
+
+#wheel::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 20px solid yellow;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.board {
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 40px);
+  gap: 5px;
+  justify-content: center;
+}
+
+.cell {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cell.red {
+  background: red;
+}
+
+.cell.black {
+  background: black;
+  color: white;
+}
+
+.cell.green {
+  background: green;
+}
+
+.chips-panel {
+  margin-top: 20px;
+}
+
+.chip {
+  background: gold;
+  border-radius: 50%;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#status {
+  margin-top: 20px;
+  font-size: 18px;
+}
