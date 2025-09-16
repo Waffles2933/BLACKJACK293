@@ -1,116 +1,168 @@
-// === ROULETTE GAME LOGIC ===
+// === ROULETTE JS ===
 
-let currentChipValue = 1;
-let bets = {}; // { betType: amount }
+// Player info
 let playerChips = 1000;
-let spinning = false;
+let currentBet = 0;
+let bets = []; // {type:'number/red/etc', value:amount}
 
-const spinBtn = document.getElementById("spinBtn");
-const clearBtn = document.getElementById("clearBtn");
-const wheel = document.getElementById("wheel");
-const status = document.getElementById("status");
-const table = document.getElementById("bettingTable");
-const chipButtons = document.querySelectorAll(".chip");
+// Roulette numbers for American wheel
+const wheelNumbers = [
+  '0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1',
+  '00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'
+];
 
-const rouletteNumbers = ["0", "00"].concat([...Array(36).keys()].map(n => (n+1).toString()));
-const redNumbers = ["1","3","5","7","9","12","14","16","18","19","21","23","25","27","30","32","34","36"];
-const blackNumbers = ["2","4","6","8","10","11","13","15","17","20","22","24","26","28","29","31","33","35"];
+const numberColors = {
+  '0':'green','00':'green',
+  '1':'red','2':'black','3':'red','4':'black','5':'red','6':'black','7':'red','8':'black',
+  '9':'red','10':'black','11':'black','12':'red','13':'black','14':'red','15':'black','16':'red',
+  '17':'black','18':'red','19':'red','20':'black','21':'red','22':'black','23':'red','24':'black',
+  '25':'red','26':'black','27':'red','28':'black','29':'black','30':'red','31':'black','32':'red',
+  '33':'black','34':'red','35':'black','36':'red'
+};
 
-// Build table grid
-function buildTable(){
-  table.innerHTML = "";
-  rouletteNumbers.forEach(num => {
-    const spot = document.createElement("div");
-    spot.classList.add("bet-spot");
-    spot.dataset.bet = num;
-    if(num === "0" || num==="00") spot.classList.add("green");
-    else if(redNumbers.includes(num)) spot.classList.add("red");
-    else spot.classList.add("black");
-    spot.innerText = num;
-    table.appendChild(spot);
+// DOM elements
+const chipsEl = document.getElementById('playerChips');
+const currentBetEl = document.getElementById('currentBet');
+const notificationEl = document.getElementById('notification');
+const spinBtn = document.getElementById('spinBtn');
+const rouletteWheel = document.getElementById('rouletteWheel');
+const tableContainer = document.getElementById('rouletteTable');
 
-    spot.addEventListener("click", () => placeBet(num, spot));
+// Canvas context for wheel
+const ctx = rouletteWheel.getContext('2d');
+const wheelRadius = rouletteWheel.width/2;
+
+// Initialize table numbers
+function initTable() {
+  const grid = tableContainer.querySelector('.numbers-grid');
+  grid.innerHTML = '';
+  for(let i=1;i<=36;i++){
+    const div = document.createElement('div');
+    div.className = 'bet-spot';
+    div.dataset.number = i;
+    div.textContent = i;
+    div.style.backgroundColor = numberColors[i];
+    div.style.color = (numberColors[i]==='red')?'white':'black';
+    div.addEventListener('click',()=>placeBet(i));
+    grid.appendChild(div);
+  }
+
+  // Add outside bets
+  tableContainer.querySelectorAll('.outside-bets .bet-spot').forEach(btn=>{
+    btn.addEventListener('click',()=>placeBet(btn.dataset.bet));
+  });
+
+  // Add 0 and 00 bets
+  tableContainer.querySelectorAll('.zero-column .bet-spot').forEach(btn=>{
+    btn.addEventListener('click',()=>placeBet(btn.dataset.number));
   });
 }
 
-buildTable();
-
-function updateStatus(msg){
-  status.innerText = msg + ` | Chips: ${playerChips}`;
+// === BETTING ===
+function placeBet(type){
+  if(playerChips<=0) return alert("No chips left!");
+  const amount = 10; // fixed chip for simplicity
+  bets.push({type:type,value:amount});
+  currentBet += amount;
+  playerChips -= amount;
+  updateDisplay();
 }
 
-// Chip selection
-chipButtons.forEach(chip => {
-  chip.addEventListener("click", () => {
-    currentChipValue = parseInt(chip.dataset.value);
+// Update chip display
+function updateDisplay(){
+  chipsEl.textContent = playerChips;
+  currentBetEl.textContent = currentBet;
+}
+
+// === WHEEL SPIN ===
+function spinWheel(){
+  if(bets.length===0) return alert("Place a bet first!");
+  
+  const spinIndex = Math.floor(Math.random()*wheelNumbers.length);
+  const result = wheelNumbers[spinIndex];
+  
+  animateWheel(spinIndex, ()=>{
+    checkBets(result);
+    bets=[];
+    currentBet=0;
+    updateDisplay();
   });
-});
-
-function placeBet(bet, spot){
-  if(playerChips < currentChipValue){
-    updateStatus("Not enough chips!");
-    return;
-  }
-  if(!bets[bet]) bets[bet]=0;
-  bets[bet] += currentChipValue;
-  playerChips -= currentChipValue;
-  updateStatus(`Bet ${currentChipValue} on ${bet}`);
-
-  let chipDiv = spot.querySelector(".chipOnBoard");
-  if(!chipDiv){
-    chipDiv = document.createElement("div");
-    chipDiv.classList.add("chipOnBoard");
-    spot.appendChild(chipDiv);
-  }
-  chipDiv.innerText = bets[bet];
 }
 
-// Clear bets
-clearBtn.addEventListener("click", () => {
-  bets = {};
-  document.querySelectorAll(".chipOnBoard").forEach(c => c.remove());
-  updateStatus("Bets cleared!");
-});
-
-// Spin wheel
-spinBtn.addEventListener("click", () => {
-  if(spinning || Object.keys(bets).length===0){
-    updateStatus("Place at least one bet!");
-    return;
+// Animate wheel spin
+function animateWheel(targetIndex, callback){
+  let start = null;
+  let totalSpins = 5*wheelNumbers.length + targetIndex; // total positions to move
+  function step(timestamp){
+    if(!start) start=timestamp;
+    const progress = (timestamp-start)/2000; // spin duration ~2s
+    let angleIndex = Math.floor(progress*totalSpins)%wheelNumbers.length;
+    drawWheel(angleIndex);
+    if(progress<1){
+      requestAnimationFrame(step);
+    }else{
+      drawWheel(targetIndex);
+      callback();
+    }
   }
-
-  spinning = true;
-  const deg = 720 + Math.floor(Math.random()*360);
-  wheel.style.transition = "transform 4s ease-out";
-  wheel.style.transform = `rotate(${deg}deg)`;
-
-  setTimeout(() => {
-    const index = Math.floor(Math.random()*rouletteNumbers.length);
-    const result = rouletteNumbers[index];
-    resolveBets(result);
-    spinning = false;
-  }, 4000);
-});
-
-function resolveBets(result){
-  let payout = 0;
-
-  if(bets[result]) payout += bets[result]*35;
-  if(redNumbers.includes(result) && bets["red"]) payout += bets["red"]*2;
-  if(blackNumbers.includes(result) && bets["black"]) payout += bets["black"]*2;
-
-  const numVal = parseInt(result);
-  if(!isNaN(numVal)){
-    if(numVal%2===0 && bets["even"]) payout += bets["even"]*2;
-    if(numVal%2===1 && bets["odd"]) payout += bets["odd"]*2;
-    if(numVal>=1 && numVal<=18 && bets["low"]) payout += bets["low"]*2;
-    if(numVal>=19 && numVal<=36 && bets["high"]) payout += bets["high"]*2;
-  }
-
-  playerChips += payout;
-  updateStatus(`Ball landed on ${result}! You won ${payout} chips!`);
-  bets = {};
-  document.querySelectorAll(".chipOnBoard").forEach(c => c.remove());
+  requestAnimationFrame(step);
 }
 
-updateStatus("Place your bets!");
+// Draw wheel
+function drawWheel(highlightIndex=0){
+  ctx.clearRect(0,0,rouletteWheel.width,rouletteWheel.height);
+  const center = wheelRadius;
+  const anglePerNumber = (2*Math.PI)/wheelNumbers.length;
+  for(let i=0;i<wheelNumbers.length;i++){
+    const startAngle = i*anglePerNumber - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,wheelRadius,startAngle,startAngle+anglePerNumber);
+    ctx.closePath();
+    ctx.fillStyle = (i===highlightIndex)?'yellow':numberColors[wheelNumbers[i]];
+    ctx.fill();
+    // Draw number
+    ctx.save();
+    ctx.translate(center,center);
+    ctx.rotate(startAngle + anglePerNumber/2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = (numberColors[wheelNumbers[i]]==='red')?'white':'black';
+    ctx.font = "16px Arial";
+    ctx.fillText(wheelNumbers[i], wheelRadius-10,5);
+    ctx.restore();
+  }
+}
+
+// === CHECK WINNER ===
+function checkBets(result){
+  let totalWin = 0;
+  bets.forEach(b=>{
+    if(b.type == result) totalWin += b.value*35; // straight win
+    else if(b.type==='red' && numberColors[result]==='red') totalWin += b.value*2;
+    else if(b.type==='black' && numberColors[result]==='black') totalWin += b.value*2;
+    else if(b.type==='even' && result!=='0' && result!=='00' && result%2===0) totalWin += b.value*2;
+    else if(b.type==='odd' && result!=='0' && result!=='00' && result%2===1) totalWin += b.value*2;
+    else if(b.type==='1to18' && result>=1 && result<=18) totalWin += b.value*2;
+    else if(b.type==='19to36' && result>=19 && result<=36) totalWin += b.value*2;
+    else if(b.type==='first12' && result>=1 && result<=12) totalWin += b.value*3;
+    else if(b.type==='second12' && result>=13 && result<=24) totalWin += b.value*3;
+    else if(b.type==='third12' && result>=25 && result<=36) totalWin += b.value*3;
+    else if(b.type==='col1' && [1,4,7,10,13,16,19,22,25,28,31,34].includes(result)) totalWin += b.value*3;
+    else if(b.type==='col2' && [2,5,8,11,14,17,20,23,26,29,32,35].includes(result)) totalWin += b.value*3;
+    else if(b.type==='col3' && [3,6,9,12,15,18,21,24,27,30,33,36].includes(result)) totalWin += b.value*3;
+  });
+  if(totalWin>0){
+    notificationEl.textContent = `Result: ${result}. You won ${totalWin} chips!`;
+  }else{
+    notificationEl.textContent = `Result: ${result}. You lost your bet.`;
+  }
+  playerChips += totalWin;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', ()=>{
+  initTable();
+  updateDisplay();
+  spinBtn.addEventListener('click',spinWheel);
+  drawWheel();
+});
