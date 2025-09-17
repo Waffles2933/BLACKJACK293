@@ -1,0 +1,180 @@
+/* ===== GENERAL STYLES ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0b1220;
+    color: #e6eef8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.light {
+    background-color: #f0f0f0;
+    color: #222;
+}
+
+h1, h2, h3, strong {
+    margin: 5px 0;
+}
+
+/* ===== PANELS ===== */
+#playerPanel, #dealerCards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.hand {
+    border: 2px solid #444;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px;
+    background-color: #111c30;
+    min-width: 150px;
+}
+
+body.light .hand {
+    background-color: #e0e0e0;
+    border-color: #aaa;
+}
+
+.cards {
+    display: flex;
+    margin-top: 5px;
+}
+
+/* ===== CARDS ===== */
+.card {
+    width: 60px;
+    height: 90px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin: 0 3px;
+    background-color: #fff;
+    color: #000;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    font-weight: bold;
+    text-align: center;
+}
+
+.card.red {
+    color: red;
+}
+
+.hidden-card {
+    background-color: #222;
+    border: 1px solid #555;
+    color: transparent;
+}
+
+/* Card text positions */
+.top-left, .bottom-right {
+    font-size: 12px;
+}
+.center {
+    font-size: 24px;
+}
+
+/* ===== BUTTONS ===== */
+button {
+    background-color: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+    background-color: #135bcf;
+}
+
+body.light button {
+    background-color: #007acc;
+    color: #fff;
+}
+
+body.light button:hover:not(:disabled) {
+    background-color: #005fa3;
+}
+
+/* ===== INPUTS ===== */
+input[type="number"] {
+    width: 60px;
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid #888;
+    margin-right: 5px;
+}
+
+/* ===== STATUS & NOTIFICATION ===== */
+#status {
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#notification {
+    margin-top: 5px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* ===== CHIPS & STATS ===== */
+#chips, #stats, #dealerHistory {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* ===== MODALS ===== */
+#keyModal {
+    display: none;
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#keyModal .modal-content {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 10px;
+    color: #fff;
+}
+
+body.light #keyModal .modal-content {
+    background-color: #fff;
+    color: #000;
+}
+
+/* ===== SWITCH BUTTONS ===== */
+.switch-buttons button {
+    background-color: #28a745;
+}
+
+.switch-buttons button:hover {
+    background-color: #218838;
+}
+
+body.light .switch-buttons button {
+    background-color: #2e8b57;
+}
