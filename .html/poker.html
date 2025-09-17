@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="poker.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Poker</title>
+</head>
+<body>
+
+<h1>Ultimate Texas Hold’em</h1>
+
+<!-- Game Controls -->
+<div class="controls">
+  <button id="dealBtn">Deal</button>
+  <button id="foldBtn" disabled>Fold</button>
+  <button id="checkBtn" disabled>Check</button>
+  <button id="betBtn" disabled>Bet</button>
+</div>
+
+<!-- Players and Table -->
+<div id="playerArea">
+  <div id="playerHand" class="cards"></div>
+</div>
+
+<div id="controlBtns">
+  <button id="dealFlopBtn">Flop</button>
+  <button id="dealTurnBtn">Turn</button>
+  <button id="dealRiverBtn">River</button>
+  <button id="startRoundBtn">New Round</button>
+  <button id="playRoundBtn">Play Round</button>
+  <button id="playFullRoundBtn">Full Round</button>
+</div>
+
+  <div id="table">
+  <div id="communityCards" class="cards"></div>
+  <div id="playerArea"></div>
+  <div id="aiPlayers"></div>
+</div>
+
+<!-- Status / Info -->
+<div id="status">Set your bet and press Deal.</div>
+
+<!-- Audio / Notifications if needed -->
+<div id="notification" class="notification"></div>
+
+<!-- Modals for settings / custom keys -->
+<div id="keyModal" class="modal">
+  <div class="modal-content">
+    <!-- Settings inputs go here -->
+  </div>
+</div>
+
+<script src="poker.js"></script>
+</body>
+</html>
