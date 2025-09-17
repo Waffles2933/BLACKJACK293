@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Blackjack</title>
+<style>
+#switchGames {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+}
+#switchGames button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #0ea5a6;
+  color: #042027;
+  font-weight: 700;
+  cursor: pointer;
+}
+    
+body {
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    background:#0b1220;
+    color:#e6eef8;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
+    transition: background 0.3s, color 0.3s;
+}
+body.light { background:#f0f0f0; color:#000; }
+h1 { text-align:center; margin-bottom:10px; }
+
+.table {
+    width:90%;
+    max-width:1000px;
+    background:#0f1724;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 10px 30px rgba(2,6,23,0.6);
+    margin-bottom:20px;
+}
+body.light .table { background:#fff; color:#000; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
+
+.hand {
+    background:#071026;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:12px;
+    position:relative;
+    transition:border 0.2s;
+}
+body.light .hand { background:#e0e0e0; }
+
+.cards { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+
+.card {
+    width:60px; height:85px;
+    border-radius:8px;
+    background:#fff;
+    color:#000;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:4px;
+    font-weight:700;
+    text-align:center;
+    box-shadow:0 4px 8px rgba(0,0,0,0.4);
+    position:relative;
+    font-family:'Arial Black',Arial,sans-serif;
+    transition: transform 0.2s;
+}
+.card.red { color:#e11d48; }
+.card .top-left, .card .bottom-right { font-size:14px; position:absolute; }
+.card .top-left { top:4px; left:4px; }
+.card .bottom-right { bottom:4px; right:4px; transform:rotate(180deg); }
+.card .center { font-size:24px; }
+.card.animate { transform: translateY(-10px); }
+
+.hidden-card {
+    background: linear-gradient(135deg,#334155,#0f1724);
+    color: transparent;
+    position: relative;
+    overflow: hidden;
+}
+.hidden-card::after {
+    content:"";
+    position:absolute;
+    inset:0;
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 6px, transparent 6px 12px);
+}
+
+.controls { display:flex; gap:6px; justify-content:center; margin:10px 0; flex-wrap:wrap; }
+button { padding:6px 10px; border-radius:6px; border:none; background:#0ea5a6; color:#042027; font-weight:700; cursor:pointer; }
+button:disabled { opacity:0.5; cursor:default; }
+
+.status { text-align:center; font-weight:700; margin:8px 0; }
+.score { font-weight:900; color:#9ad1d1; font-size:20px; }
+body.light .score { color:#0a9396; }
+
+.bet-chips { text-align:center; margin-bottom:8px; }
+input[type=number] { width:60px; padding:4px; border-radius:4px; border:none; font-weight:700; }
+
+#keySettingsBtn,#themeToggleBtn { position:absolute; top:10px; padding:6px 10px; font-weight:700; }
+#keySettingsBtn { right:120px; background:#facc15; color:#042027; }
+#themeToggleBtn { right:10px; background:#94a3b8; color:#042027; }
+
+#keyModal {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    justify-content:center;
+    align-items:center;
+}
+.modal-content {
+    background:#0f1724;
+    padding:20px;
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.modal-content input { width:60px; padding:4px; border-radius:4px; border:none; font-weight:700; }
+
+.notification {
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    padding:20px 30px;
+    font-size:28px; font-weight:900;
+    color:#f00;
+    background:rgba(255,255,255,0.1);
+    border-radius:12px;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity 0.5s;
+}
+
+#stats { margin-top:10px; font-size:14px; text-align:center; }
+#dealerHistory { margin-bottom:6px; font-size:14px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="switchGames">
+  <button onclick="window.location.href='poker.html'">Switch to Poker</button>
+  <button onclick="window.location.href='roulette.html'">Switch to Roulette</button>
+</div>
+    
+<h1>Ultimate Blackjack</h1>
+<button id="keySettingsBtn">Custom Keys</button>
+<button id="themeToggleBtn">Toggle Theme</button>
+
+<div class="bet-chips">
+Chips: <span id="chips">1000</span> | Bet: <input type="number" id="betInput" min="1" max="1000" value="10">
+<button id="preset10">10</button>
+<button id="preset50">50</button>
+<button id="preset100">100</button>
+</div>
+
+<div id="dealerHistory">Dealer Last Cards: </div>
+
+<div class="table" id="dealerPanel">
+<div class="hand">
+<strong>Dealer</strong> <span class="score" id="dealerScore">—</span>
+<div class="cards" id="dealerCards"></div>
+</div>
+</div>
+
+<div class="table" id="playerPanel"></div>
+
+<div class="controls">
+<button id="dealBtn">Deal</button>
+<button id="hitBtn" disabled>Hit</button>
+<button id="standBtn" disabled>Stand</button>
+<button id="doubleBtn" disabled>Double Down</button>
+<button id="splitBtn" disabled>Split</button>
+<button id="restartBtn">Restart</button>
+</div>
+
+<div class="status" id="status">Set your bet and press Deal.</div>
+<div id="stats">Wins: 0 | Losses: 0 | Blackjacks: 0</div>
+<div id="notification" class="notification"></div>
+
+<div id="keyModal">
+<div class="modal-content">
+<label>Hit: <input id="keyHit" maxlength="1" value="h"></label>
+<label>Stand: <input id="keyStand" maxlength="1" value="s"></label>
+<label>Double: <input id="keyDouble" maxlength="1" value="d"></label>
+<label>Split: <input id="keySplit" maxlength="1" value="p"></label>
+<label>Redeal: <input id="keyRedeal" maxlength="1" value="r"></label>
+<button id="saveKeysBtn">Save Keys</button>
+</div>
+</div>
+
+<audio id="sndHit" src="https://freesound.org/data/previews/65/65963_634166-lq.mp3"></audio>
+<audio id="sndWin" src="https://freesound.org/data/previews/146/146725_2379855-lq.mp3"></audio>
+<audio id="sndLose" src="https://freesound.org/data/previews/151/151022_2512250-lq.mp3"></audio>
+
+<script src="blackjack_part2.js"></script>
+</body>
+</html>
