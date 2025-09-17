@@ -2,20 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Blackjack</title>
+  <title>Blackjack Complex</title>
   <style>
     body {
-      background: #0b1220;
-      color: #f5d742;
       font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0b1220, #1a2a4f);
+      color: #f5d742;
       text-align: center;
-      padding-top: 50px;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-top: 10px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+    #table {
+      margin-top: 20px;
+      padding: 20px;
+      border: 2px solid #f5d742;
+      border-radius: 15px;
+      display: inline-block;
+      background: rgba(0,0,0,0.3);
+    }
+    .hand {
+      margin: 20px;
+    }
+    .cards {
+      font-size: 1.3rem;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 8px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      background: #f5d742;
+      color: #0b1220;
+      transition: 0.2s;
+    }
+    button:hover:not(:disabled) {
+      background: #fff27a;
+      transform: scale(1.05);
+    }
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 1.2rem;
+    }
+    #balance {
+      margin-top: 15px;
+      font-size: 1.1rem;
     }
   </style>
 </head>
 <body>
   <h1>Blackjack</h1>
-  <p>This is the Blackjack game page.</p>
-  <a href="index.html" style="color:#fff27a;">⬅ Back to Casino Hub</a>
+  <div id="balance">Balance: $<span id="money">500</span></div>
+  <div>
+    <label>Bet: $<input type="number" id="bet" value="50" min="10" max="500" step="10"></label>
+  </div>
+
+  <div id="table">
+    <div class="hand">
+      <h2>Dealer (<span id="dealer-score">0</span>)</h2>
+      <div id="dealer-cards" class="cards"></div>
+    </div>
+    <div class="hand">
+      <h2>You (<span id="player-score">0</span>)</h2>
+      <div id="player-cards" class="cards"></div>
+    </div>
+  </div>
+
+  <div>
+    <button id="dealBtn">Deal</button>
+    <button id="hitBtn" disabled>Hit</button>
+    <button id="standBtn" disabled>Stand</button>
+    <button id="restartBtn">Restart Balance</button>
+  </div>
+
+  <div id="status"></div>
+
+  <script>
+    const suits = ["♠","♥","♦","♣"];
+    const ranks = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+    let deck, dealerHand, playerHand, playerMoney = 500, currentBet = 0;
+
+    const dealerCardsDiv = document.getElementById("dealer-cards");
+    const playerCardsDiv = document.getElementById("player-cards");
+    const dealerScoreSpan = document.getElementById("dealer-score");
+    const playerScoreSpan = document.getElementById("player-score");
+    const moneySpan = document.getElementById("money");
+    const betInput = document.getElementById("bet");
+    const statusDiv = document.getElementById("status");
+
+    const btnDeal = document.getElementById("dealBtn");
+    const btnHit = document.getElementById("hitBtn");
+    const btnStand = document.getElementById("standBtn");
+    const btnRestart = document.getElementById("restartBtn");
+
+    function makeDeck() {
+      let d = [];
+      for (let s of suits) for (let r of ranks) d.push({suit: s, rank: r});
+      return shuffle(d);
+    }
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+    function cardValue(card) {
+      if (["J","Q","K"].includes(card.rank)) return 10;
+      if (card.rank === "A") return 11;
+      return parseInt(card.rank);
+    }
+    function calcScore(hand) {
+      let score = hand.reduce((sum, c) => sum + cardValue(c), 0);
+      let aces = hand.filter(c => c.rank === "A").length;
+      while (score > 21 && aces > 0) {
+        score -= 10;
+        aces--;
+      }
+      return score;
+    }
+
+    function updateHands(showDealer=false) {
+      dealerCardsDiv.innerHTML = "";
+      dealerHand.forEach((c, i) => {
+        if (!showDealer && i === 0) {
+          dealerCardsDiv.innerHTML += "[Hidden] ";
+        } else {
+          dealerCardsDiv.innerHTML += `${c.rank}${c.suit} `;
+        }
+      });
+      dealerScoreSpan.textContent = showDealer ? calcScore(dealerHand) : "?";
+
+      playerCardsDiv.innerHTML = "";
+      playerHand.forEach(c => playerCardsDiv.innerHTML += `${c.rank}${c.suit} `);
+      playerScoreSpan.textContent = calcScore(playerHand);
+    }
+
+    function startRound() {
+      currentBet = parseInt(betInput.value);
+      if (isNaN(currentBet) || currentBet < 10 || currentBet > playerMoney) {
+        statusDiv.textContent = "Invalid bet!";
+        return;
+      }
+      playerMoney -= currentBet;
+      moneySpan.textContent = playerMoney;
+      deck = makeDeck();
+      dealerHand = [deck.pop(), deck.pop()];
+      playerHand = [deck.pop(), deck.pop()];
+      statusDiv.textContent = "";
+      btnDeal.disabled = true;
+      btnHit.disabled = false;
+      btnStand.disabled = false;
+      updateHands(false);
+      checkBlackjack();
+    }
+
+    function checkBlackjack() {
+      const playerScore = calcScore(playerHand);
+      const dealerScore = calcScore(dealerHand);
+      if (playerScore === 21 && dealerScore === 21) {
+        endRound("Push! Both have Blackjack.", true);
+      } else if (playerScore === 21) {
+        endRound("Blackjack! You win 1.5x your bet.", true, 1.5);
+      }
+    }
+
+    function endRound(msg, showDealer=true, payoutMultiplier=1) {
+      updateHands(true);
+      btnDeal.disabled = false;
+      btnHit.disabled = true;
+      btnStand.disabled = true;
+      if (payoutMultiplier > 0) {
+        playerMoney += currentBet + currentBet * payoutMultiplier;
+        moneySpan.textContent = playerMoney;
+      }
+      statusDiv.textContent = msg;
+    }
+
+    btnDeal.addEventListener("click", startRound);
+    btnHit.addEventListener("click", () => {
+      playerHand.push(deck.pop());
+      updateHands(false);
+      if (calcScore(playerHand) > 21) {
+        endRound("You busted! Dealer wins.");
+      }
+    });
+    btnStand.addEventListener("click", () => {
+      while (calcScore(dealerHand) < 17) {
+        dealerHand.push(deck.pop());
+      }
+      const playerScore = calcScore(playerHand);
+      const dealerScore = calcScore(dealerHand);
+      if (dealerScore > 21) {
+        endRound("Dealer busts! You win.", true, 1);
+      } else if (playerScore > dealerScore) {
+        endRound("You win!", true, 1);
+      } else if (playerScore < dealerScore) {
+        endRound("Dealer wins.");
+      } else {
+        endRound("Push! It's a tie.", true, 0);
+        playerMoney += currentBet;
+        moneySpan.textContent = playerMoney;
+      }
+    });
+
+    btnRestart.addEventListener("click", () => {
+      playerMoney = 500;
+      moneySpan.textContent = playerMoney;
+      statusDiv.textContent = "Balance reset.";
+    });
+  </script>
 </body>
 </html>
