@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Casino Game Hub</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0b1220, #1a2a40);
+      color: #e6eef8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
+    }
+    .menu {
+      display: flex;
+      gap: 20px;
+    }
+    .menu a {
+      text-decoration: none;
+    }
+    .menu button {
+      background-color: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    }
+    .menu button:hover {
+      background-color: #135bcf;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>Casino Game Hub</h1>
+  <div class="menu">
+    <a href="blackjack.html"><button>Play Blackjack</button></a>
+    <a href="poker.html"><button>Play Poker</button></a>
+    <a href="roulette.html"><button>Play Roulette</button></a>
+  </div>
+</body>
+</html>
